@@ -71,12 +71,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLng(start));
         mMap.addMarker(new MarkerOptions().position(start).title("起點!!"));
         mMap.getUiSettings().setZoomControlsEnabled(true);
-        Button nextPageBtn = (Button)findViewById(R.id.button);
-        nextPageBtn.setOnClickListener(new View.OnClickListener() {
+        Button nextPage1 = (Button)findViewById(R.id.gotosensor);
+        nextPage1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent();
                 intent.setClass(MapsActivity.this , SensorActivity.class);
+                startActivity(intent);
+            }
+        });
+        Button nextPage2 = (Button)findViewById(R.id.gotologin);
+        nextPage2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setClass(MapsActivity.this , LoginActivity.class);
                 startActivity(intent);
             }
         });
