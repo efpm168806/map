@@ -49,7 +49,10 @@
             android:screenOrientation="portrait"
         </activity>
         <activity android:name=".LoginActivity" />
-        <activity android:name=".registerActivity"></activity>
+        <activity android:name=".registerActivity" />
+        <activity android:name=".RoomActivity" />
+        <activity android:name=".Room2Activity" />
+        <activity android:name=".TestActivity"></activity>
     </application>
 
 </manifest>

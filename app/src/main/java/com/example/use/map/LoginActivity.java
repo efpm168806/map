@@ -27,7 +27,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
     String id,pwd;
     String fileName="Login";
     TextView textView;
-    Button Login,Sign;
+    Button Login,Sign,Room;
 
     FileInputStream inputStream;
     @Override
@@ -42,9 +42,12 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         textView =(TextView)findViewById(R.id.textView);
         Login =(Button)findViewById(R.id.Login);
         Sign =(Button)findViewById(R.id.Sign);
+        Room =(Button)findViewById(R.id.Room);
         layout.setOnClickListener(this);
         Login.setOnClickListener(this);
         Sign.setOnClickListener(this);
+        Room.setOnClickListener(this);
+
 
     }
 
@@ -72,7 +75,6 @@ public class LoginActivity extends Activity implements View.OnClickListener {
                         outputStream.write(pwd.getBytes());
 
                         outputStream.close();
-
                         textView.setText("登入成功!!");
 
                     } catch (FileNotFoundException e) {
@@ -93,6 +95,10 @@ public class LoginActivity extends Activity implements View.OnClickListener {
 
                 break;
 
+
+            case R.id.Room:
+                intent.setClass(LoginActivity.this , RoomActivity.class);
+                startActivity(intent);
         }
     }
 }

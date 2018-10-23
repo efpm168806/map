@@ -41,18 +41,18 @@ public class registerItem {
         }
 
         public boolean register(){
-            Thread registerDB = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    JSONArray jsonArray = registerSELECT();
+                Thread registerDB = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        JSONArray jsonArray = registerSELECT();
+                    }
+                });
+                registerDB.start();
+                try{
+                    registerDB.join();
+                }catch ( InterruptedException e){
+                    System.out.println("執行序被中斷");
                 }
-            });
-            registerDB.start();
-            try{
-                registerDB.join();
-            }catch ( InterruptedException e){
-                System.out.println("執行序被中斷");
-            }
 
             if (jsonArrayLength >0){
                 return false;

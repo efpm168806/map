@@ -53,8 +53,7 @@ public class registerActivity extends Activity implements View.OnClickListener {
             case R.id.register:
                 id = register_id.getText().toString();
                 pwd = register_pwd.getText().toString();
-
-                System.out.println(id+pwd);
+                System.out.println("帳號:"+id+"密碼:"+pwd);
                 registerItem registerItem = new registerItem(id,pwd);
                 registerItem.register();
 
