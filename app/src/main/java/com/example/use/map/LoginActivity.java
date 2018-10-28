@@ -4,17 +4,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.support.constraint.ConstraintLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.use.map.LoginItem;
-
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -90,7 +85,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
                 }
 
             case R.id.Sign:
-                intent.setClass(LoginActivity.this , registerActivity.class);
+                intent.setClass(LoginActivity.this , RoomActivity.class);
                 startActivity(intent);
 
                 break;

@@ -1,9 +1,7 @@
 package com.example.use.map;
 
-import android.content.Context;
 import android.content.Intent;
 import android.support.constraint.ConstraintLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
@@ -12,11 +10,6 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.BreakIterator;
 
 public class registerActivity extends Activity implements View.OnClickListener {
 

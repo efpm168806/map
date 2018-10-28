@@ -1,9 +1,10 @@
 package com.example.use.map;
 
 import android.util.Log;
+
+import com.example.use.map.DBconnect;
+
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class registerItem {
     int jsonArrayLength = 0;
