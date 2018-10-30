@@ -53,8 +53,10 @@ public class inroom extends Activity implements View.OnClickListener {
 
         setContentView(R.layout.inroom);
         Layout =(LinearLayout)findViewById(R.id.Layout);
-        back = (Button)findViewById(R.id.seekroom);
+        back = (Button)findViewById(R.id.back);
         start = (Button)findViewById(R.id.start);
+        back.setOnClickListener(this);
+        start.setOnClickListener(this);
 
         Intent intent = getIntent();
         RoomID = intent.getStringExtra("RoomID");
@@ -62,7 +64,6 @@ public class inroom extends Activity implements View.OnClickListener {
         System.out.println("UserID:" + ID);
         Room2Item Room2Item = new Room2Item(Integer.parseInt(RoomID) ,ID);
         player_all = Room2Item.player_set();
-        System.out.println("player_all:"+player_all);
         if(player_all != null) {
             try {
                 for (int i = 0; i < player_all.length(); i++) {
@@ -102,6 +103,8 @@ public class inroom extends Activity implements View.OnClickListener {
         Intent intent = new Intent();
         switch (view.getId()){
             case R.id.back:
+                Room2Item Room2Item = new Room2Item(Integer.parseInt(RoomID),ID);
+                Room2Item.player_delete();
                 intent.setClass(inroom.this, seekroom.class);
                 startActivity(intent);
                 break;
