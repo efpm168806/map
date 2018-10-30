@@ -1,18 +1,20 @@
 <resources>
-    <string name="app_name">map</string>
-    <string name="title_activity_maps">Map</string>
-    <string name="title_activity_sensor">SensorActivity</string>
-    <string name="title_activity_login">LoginActivity</string>
-    <!-- Strings related to login -->
-    <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password (optional)</string>
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
-    <string name="error_field_required">This field is required</string>
-    <string name="permission_rationale">"Contacts permissions are needed for providing email
-        completions."
-    </string>
+    <string name="app_name">Hide&amp;SeekApp</string>
+    <string-array name="lunch">
+        <item>繁體中文</item>
+        <item>繁體中文</item>
+
+    </string-array>
+    <string-array name="roomnumber">
+        <item>2人</item>
+        <item>3人</item>
+        <item>4人</item>
+        <item>5人</item>
+        <item>6人</item>
+    </string-array>
+    <string-array name="location">
+        <item>高大 距離0.5公里</item>
+        <item>高海距離3公里</item>
+        <item>高應大距離10公里</item>
+    </string-array>
 </resources>

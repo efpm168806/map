@@ -19,7 +19,7 @@ public class registerActivity extends Activity implements View.OnClickListener {
     RadioGroup register_sex;
     RadioButton man,female;
     TextView textView;
-    String fileName="Sign";
+    String fileName="login";
     Button register;
 
 

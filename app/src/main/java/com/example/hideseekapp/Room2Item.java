@@ -1,4 +1,4 @@
-package com.example.use.map;
+package com.example.hideseekapp;
 
 import android.util.Log;
 import org.json.JSONArray;

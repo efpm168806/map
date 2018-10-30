@@ -1,4 +1,4 @@
-package com.example.use.map;
+package com.example.hideseekapp;
 
 import android.net.http.HttpsConnection;
 import android.util.Log;

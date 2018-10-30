@@ -1,9 +1,7 @@
 package com.example.use.map;
 
 import android.util.Log;
-
 import com.example.use.map.DBconnect;
-
 import org.json.JSONArray;
 
 public class registerItem {
