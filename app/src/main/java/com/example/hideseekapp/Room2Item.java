@@ -32,6 +32,25 @@ public class Room2Item {
         }
     }
 
+    public void room_delete(){ //房間沒人刪除房間
+        Thread room_delete = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (room_insert() != null){
+                    System.out.println("房間尚有玩家!!");
+                }else{
+                    room_det();
+                }
+            }
+        });
+        room_delete.start();
+        try{
+            room_delete.join();
+        }catch (InterruptedException e){
+            System.out.println("執行序被中斷");
+        }
+    }
+
     public JSONArray player_set(){
         Thread player_get = new Thread(new Runnable() {
             @Override
@@ -78,4 +97,33 @@ public class Room2Item {
         return jsonArray;
     }
 
+    private JSONArray room_insert(){  //查看房間是否有人
+        try{
+            String result = DBconnect.executeQuery("INSERT  FROM enter_room WHERE room_id ='"+RoomID+"' ");
+            System.out.println("INSERT  FROM enter_room WHERE room_id ='"+RoomID+"' ");
+            JSONArray  jsonArray_insert =new JSONArray(result);
+            System.out.println("connect ok");
+            jsonArray =jsonArray_insert;
+            return jsonArray;
+        } catch (JSONException e) {
+            Log.e("log_tag", e.toString());
+            System.out.println("connect failed");
+        }
+
+        return jsonArray;
+    }
+
+    private void room_det(){  //若無人，刪除房間
+        try{
+            String result = DBconnect.executeQuery("DELETE  FROM room WHERE room_id ='"+RoomID+"' ");
+            System.out.println("DELETE  FROM room WHERE room_id ='"+RoomID+"' ");
+            JSONArray  jsonArray_delete =new JSONArray(result);
+            System.out.println("connect ok");
+            jsonArray =jsonArray_delete;
+        } catch (JSONException e) {
+            Log.e("log_tag", e.toString());
+            System.out.println("connect failed");
+        }
+
+    }
 }

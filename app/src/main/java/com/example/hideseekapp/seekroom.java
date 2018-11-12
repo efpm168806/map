@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -20,16 +19,26 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Timer;
 
 public class seekroom extends Activity implements View.OnClickListener {
-    Handler handler =new Handler();
+    static Handler handler = new Handler();
     Button creatroom ,back;
+    boolean stop = false;
     TextView Room ,AddRoom = null;
     LinearLayout layout;
     String FileName="Login" ,ID ,Room_name ,room_detail ,roomClick;
     JSONArray Room_all; //房間全部資料
     int Room_id;
     ArrayList<TextView> add = new ArrayList<>();
+
+
+    Runnable run =new Runnable(){
+        @Override
+        public void run() {
+            onCreate(null);
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -81,11 +90,11 @@ public class seekroom extends Activity implements View.OnClickListener {
                     AddRoom.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+                            stop = true;
                             System.out.println("room_click:"+roomClick);
                             RoomItem RoomItem = new RoomItem(room_click, ID);
                             Intent intent = new Intent();
                             RoomItem.enter_room();
-
                             intent.setClass(seekroom.this, inroom.class);
                             intent.putExtra("RoomID",Integer.toString(room_click));
                             intent.putExtra("UserID",ID);
@@ -101,23 +110,33 @@ public class seekroom extends Activity implements View.OnClickListener {
             System.out.println("房間出錯!!");
         }
 
-        handler.postDelayed(new Runnable(){
-
-            @Override
-            public void run() {
-                onCreate(null);
-                System.out.println("重整!!");
-            }}, 3000);
-
         add.clear();
+        if (!stop) {
+            handler.postDelayed(run, 3000);
+            System.out.println("重整房間列表!");
+        }else{
+            handler.removeCallbacks(run);
+            System.out.println("停止重整房間列表!");
+        }
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        onCreate(null);
     }
 
     @Override
     public void onClick(View view){
+        stop = true;
         Intent intent = new Intent();
         switch (view.getId()){
             case R.id.creatroom:
-                intent.setClass(seekroom.this, creatroom.class);
+                RoomItem RoomItem = new RoomItem((Room_id+1),ID);
+                RoomItem.room_update();
+                RoomItem.enter_room_chief();
+                intent.setClass(seekroom.this, inroom.class);
+                intent.putExtra("RoomID",Integer.toString((Room_id+1)));
                 startActivity(intent);
                 break;
             case  R.id.back:

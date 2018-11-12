@@ -22,6 +22,7 @@ import java.util.ArrayList;
 
 public class inroom extends Activity implements View.OnClickListener {
     Handler handler = new Handler();
+    boolean stop = false;
     TextView player;
     String FileName = "Login",ID ,user_id ,RoomID ,player_id;
     LinearLayout Layout;
@@ -29,6 +30,13 @@ public class inroom extends Activity implements View.OnClickListener {
     JSONArray player_all;
     ArrayList<String> player_list = new ArrayList<>();
     ArrayList<TextView> player_list2 = new ArrayList<>();
+
+    private Runnable run =new Runnable(){
+        @Override
+        public void run() {
+            onCreate(null);
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -86,30 +94,31 @@ public class inroom extends Activity implements View.OnClickListener {
             }
         }
 
-        handler.postDelayed(new Runnable(){
-
-            @Override
-            public void run() {
-                onCreate(null);
-                System.out.println("重整!!");
-            }}, 3000);
-
         player_list.clear();
         player_list2.clear();
+        if (!stop) {
+            handler.postDelayed(run, 3000);
+            System.out.println("重整房間!");
+        }else{
+            handler.removeCallbacks(run);
+            System.out.println("停止重整房間!");
+        }
     }
 
     @Override
     public void onClick(View view){
+        stop =true;
         Intent intent = new Intent();
         switch (view.getId()){
             case R.id.back:
                 Room2Item Room2Item = new Room2Item(Integer.parseInt(RoomID),ID);
                 Room2Item.player_delete();
+                Room2Item.room_delete();
                 intent.setClass(inroom.this, seekroom.class);
                 startActivity(intent);
                 break;
             case R.id.start:
-                intent.setClass(inroom.this, ingame.class);
+                intent.setClass(inroom.this, MapsActivity.class);
                 startActivity(intent);
                 break;
         }

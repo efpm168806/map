@@ -17,4 +17,5 @@
         <item>高海距離3公里</item>
         <item>高應大距離10公里</item>
     </string-array>
+    <string name="title_activity_maps">Map</string>
 </resources>
