@@ -2,6 +2,7 @@ package com.example.hideseekapp;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -31,6 +32,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+    AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+         dialog.setTitle("基本訊息對話按鈕");
+     dialog.setMessage("基本訊息對話功能介紹");
     Handler handler = new Handler();
     private GoogleMap mMap;
     private static final int REQUEST_LOCATION = 2;
@@ -54,7 +58,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     };
 
-    public MapsActivity(String[][] list, int a) {
+    public void getlist(String[][] list,int a){
         this.list = list;
         this.a = a;
     }
@@ -244,14 +248,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             LatLng myself = new LatLng(Latitude, Longitude);
             mMap.addMarker(new MarkerOptions().position(myself).title("me"));
 
-        //鬼玩家的畫面
+            //鬼玩家的畫面
         }else{
             for(int i=0 ; i<a ; i++){
                 //如果鬼看到鬼
                 if(list[i][4]=="1"){
                     LatLng point = new LatLng(Double.parseDouble(list[i][2]), Double.parseDouble(list[i][1]));
                     mMap.addMarker(new MarkerOptions().position(point).title("ghost player"));
-                //如果鬼看到人
+                    //如果鬼看到人
                 }else{
                     double lat = Double.parseDouble(list[i][2]);
                     double longt = Double.parseDouble(list[i][1]);

@@ -1,31 +1,15 @@
 package com.example.hideseekapp;
 
-import android.content.Intent;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.View;
-import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.TextView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 
 public class MapItem {
     double latitude ,longitude;
     String ID;
     String[][]list;
+    String[][]list2;
+    int a;
     int item_index;
     private static final double EARTH_RADIUS = 6378.137;
 
@@ -110,12 +94,23 @@ public class MapItem {
             String Ghost=(String)ghost2.getString("ghost").toString();
 
             //將同個房間內玩家的資訊(ID、經緯度、道具)放入list陣列並傳回MapsActivity來做標點
-            MapsActivity MapsActivity = new MapsActivity(list,a);
+            MapsActivity MapsActivity = new MapsActivity();
             MapsActivity.MakePoint(Ghost);
+            MapsActivity.getlist(MapsActivityList(list),MapsActivityA(a));
         }
         catch(JSONException e){
             System.out.println("location_get connect failed");
         }
+    }
+
+    public String[][] MapsActivityList(String[][] list2) {
+        this.list2 = list2;
+        return list2;
+    }
+
+    public int MapsActivityA(int a) {
+        this.a = a;
+        return a;
     }
 
     public void ghostcatch(){
