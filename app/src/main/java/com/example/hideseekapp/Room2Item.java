@@ -36,7 +36,7 @@ public class Room2Item {
         Thread room_delete = new Thread(new Runnable() {
             @Override
             public void run() {
-                if (room_insert() != null){
+                if (room_select() != null){
                     System.out.println("房間尚有玩家!!");
                 }else{
                     room_det();
@@ -97,10 +97,10 @@ public class Room2Item {
         return jsonArray;
     }
 
-    private JSONArray room_insert(){  //查看房間是否有人
+    private JSONArray room_select(){  //查看房間是否有人
         try{
-            String result = DBconnect.executeQuery("INSERT  FROM enter_room WHERE room_id ='"+RoomID+"' ");
-            System.out.println("INSERT  FROM enter_room WHERE room_id ='"+RoomID+"' ");
+            String result = DBconnect.executeQuery("SELECT  FROM enter_room WHERE room_id ='"+RoomID+"' ");
+            System.out.println("SELECT  FROM enter_room WHERE room_id ='"+RoomID+"' ");
             JSONArray  jsonArray_insert =new JSONArray(result);
             System.out.println("connect ok");
             jsonArray =jsonArray_insert;

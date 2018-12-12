@@ -1,5 +1,7 @@
 package com.example.hideseekapp;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.Image;
 import android.os.Bundle;
@@ -7,11 +9,23 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 
 public class gamemainpage extends AppCompatActivity implements View.OnClickListener {
+//    AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+//     dialog.setTitle("基本訊息對話按鈕");
+//     dialog.setMessage("基本訊息對話功能介紹");
+//     dialog.setNegativeButton("NO",new DialogInterface.OnClickListener() {
+////        @Override
+////        public void onClick(DialogInterface arg0, int arg1) {
+////            // TODO Auto-generated method stub
+////            Toast.makeText(this, "我還尚未了解",Toast.LENGTH_SHORT).show();
+////        }
+//
+//    });
         Button chooseroom;
         ImageButton personal ,setting ,bag ,shop;
         String FileName ="Login" ,ID;

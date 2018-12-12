@@ -47,9 +47,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     static double Longitude;
     ArrayList<String> item_list = new ArrayList<>();
     ImageButton baggage;
-    JSONArray item_all ,item_name ,item_num;
+    JSONArray item_all ,item2_all;
     LocationRequest locationRequest;
-    String fileName="Login" ,item_id;
+    String fileName="Login" ,item_id ,item_name ,item_num;
     String ID;
     String[][] list;
     int a;
@@ -444,16 +444,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 item_list.clear();
                 MapItem MapItem = new MapItem(0, 0,ID);
                 item_all = MapItem.item_set();
+                System.out.println("item_all:"+item_all);
                 try{
                     for(int i= 0 ; i<item_all.length(); i++){
                         JSONObject jsonObject = item_all.getJSONObject(i);
                         item_id = jsonObject.getString("item_id");
-                        for(int j= 0 ; j<item_id.length(); j++){
-                            Map2Item Map2Item = new Map2Item(item_id);
-                            JSONObject jsonObject2 = item_name.getJSONObject(i);
-//                            item_name = jsonObject2.getString("User_id");
-                            item_name = Map2Item.item_name(item_id);
-                            item_num = Map2Item.item_num(item_id);
+                        item_num = jsonObject.getString("item_num");
+                        Map2Item Map2Item = new Map2Item(item_id);
+                        item2_all = Map2Item.item_set();
+                        System.out.println("item2_all:"+item2_all);
+                        System.out.println("item_num:"+item_num);
+                        for(int j= 0 ; j<1; j++){
+                            JSONObject jsonObject2 = item2_all.getJSONObject(i);
+                            item_name = jsonObject2.getString("item_name");
                             item_list.add(item_name + "   X " + item_num);
                         }
                     }

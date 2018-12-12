@@ -12,10 +12,27 @@ public class Map2Item {
         this.item_id =item_id;
     }
 
-    public JSONArray item_name(String item_id){
+    public JSONArray item_set(){
+        Thread item_get = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                item_get();
+            }
+        });
+        item_get.start();
         try {
-            String result = DBconnect.executeQuery("SELECT item_name FROM item WHERE item_id = '"+item_id+"'");
+            item_get.join();
+        } catch (InterruptedException e) {
+            System.out.println("執行序被中斷");
+        }
+        return jsonArray;
+    }
+
+    public JSONArray item_get(){
+        try {
+            String result = DBconnect.executeQuery("SELECT * FROM item WHERE item_id = '"+item_id+"'");
             JSONArray jsonArray_get = new JSONArray(result);
+            System.out.println("SELECT * FROM item WHERE item_id = '"+item_id+"'");
             System.out.println("connect ok");
             jsonArray =jsonArray_get;
             return jsonArray;
@@ -26,18 +43,5 @@ public class Map2Item {
         return jsonArray;
     }
 
-    public JSONArray item_num(String item_id){
-        try {
-            String result = DBconnect.executeQuery("SELECT item_name FROM playeritem WHERE item_id = '"+item_id+"'");
-            JSONArray jsonArray_get = new JSONArray(result);
-            System.out.println("connect ok");
-            jsonArray =jsonArray_get;
-            return jsonArray;
-        } catch (Exception e) {
-            Log.e("log_tag", e.toString());
-            System.out.println("connect failed");
-        }
-        return jsonArray;
-    }
 
 }
