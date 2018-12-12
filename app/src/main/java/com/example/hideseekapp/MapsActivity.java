@@ -3,6 +3,8 @@ package com.example.hideseekapp;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -13,6 +15,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -30,18 +36,20 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
-    AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-         dialog.setTitle("基本訊息對話按鈕");
-     dialog.setMessage("基本訊息對話功能介紹");
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback ,View.OnClickListener {
     Handler handler = new Handler();
     private GoogleMap mMap;
     private static final int REQUEST_LOCATION = 2;
     static double Latitude;
     static double Longitude;
+    ArrayList<String> item_list = new ArrayList<>();
+    ImageButton baggage;
+    JSONArray item_all ,item_name ,item_num;
     LocationRequest locationRequest;
-    String fileName="Login";
+    String fileName="Login" ,item_id;
     String ID;
     String[][] list;
     int a;
@@ -67,6 +75,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        baggage =(ImageButton)findViewById(R.id.baggage);
+        baggage.setOnClickListener(this);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -311,6 +321,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //int item_index = '1';
         //使用道具
         item_update(item_index);
+        Log.i("XXXXXXXX",ID);
     }
 
     public void item_update(final int item_index) {
@@ -335,6 +346,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             String ItemID=(String)itemID.getString("item").toString();
             if(ItemID=="0"||ItemID==null||ItemID==""){
                 String result = DBconnect.executeQuery("UPDATE map SET item= "+item_index+" WHERE User_id = '"+ID+"'");
+                String item_num_check = DBconnect.executeQuery("SELECT item_num FROM playeritem WHERE User_id='"+ID+"' AND item_id ='"+item_index+"'");
+                    JSONObject item_num = new JSONArray(item_num_check).getJSONObject(0);
+                    String Item_num=(String)item_num.getString("item_num").toString();
+                    int num = Integer.parseInt(Item_num);
+                    int one = '1';
+                    int end = num - one;
+                    String result2 = DBconnect.executeQuery("UPDATE playeritem SET item_num = "+end+" WHERE User_id = '"+ID+"' AND item_id ='"+item_index+"' ");
                 item_time_start();
             }else{
                 //道具已經在使用中
@@ -416,6 +434,54 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //拒絕授權, 停用MyLocation功能
                 }
                 break;
+        }
+    }
+
+    @Override
+    public void onClick(View view){
+        switch (view.getId()){
+            case R.id.baggage:
+                item_list.clear();
+                MapItem MapItem = new MapItem(0, 0,ID);
+                item_all = MapItem.item_set();
+                try{
+                    for(int i= 0 ; i<item_all.length(); i++){
+                        JSONObject jsonObject = item_all.getJSONObject(i);
+                        item_id = jsonObject.getString("item_id");
+                        for(int j= 0 ; j<item_id.length(); j++){
+                            Map2Item Map2Item = new Map2Item(item_id);
+                            JSONObject jsonObject2 = item_name.getJSONObject(i);
+//                            item_name = jsonObject2.getString("User_id");
+                            item_name = Map2Item.item_name(item_id);
+                            item_num = Map2Item.item_num(item_id);
+                            item_list.add(item_name + "   X " + item_num);
+                        }
+                    }
+                    System.out.println("item_list:" + item_list);
+                } catch (JSONException e) {
+                    System.out.println("道具抓取出錯!!");
+                }
+
+                String[] array = new String[item_list.size()];
+                for (int i = 0; i < item_list.size(); i++) {
+                    array[i] = item_list.get(i);
+                }
+                AlertDialog.Builder dialog_list = new AlertDialog.Builder(this);
+                dialog_list.setTitle("利用List呈現");
+                dialog_list.setItems(array, new DialogInterface.OnClickListener(){
+                    @Override
+                    //只要你在onClick處理事件內，使用which參數，就可以知道按下陣列裡的哪一個了
+                    public void onClick(DialogInterface dialog, int which) {
+                        // TODO Auto-generated method stub
+//                Toast.makeText(this, "你選的是" + dinner[which], Toast.LENGTH_SHORT).show();
+                        //int a = '1';
+                        //UseItem(a);
+                        UseItem(which);
+                    }
+                });
+                dialog_list.show();
+                break;
+
         }
     }
 

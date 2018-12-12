@@ -1,5 +1,7 @@
 package com.example.hideseekapp;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,7 +12,7 @@ public class MapItem {
     String[][]list;
     String[][]list2;
     int a;
-    int item_index;
+    JSONArray jsonArray;
     private static final double EARTH_RADIUS = 6378.137;
 
     public MapItem(double  latitude, double longitude,String ID){
@@ -42,10 +44,19 @@ public class MapItem {
         try{
             String check = DBconnect.executeQuery("SELECT longitude,latitude FROM map WHERE User_id = '"+ID+"'  ");
             JSONObject check_res = new JSONArray(check).getJSONObject(0);
+            String Check_res=(String)check_res.getString("room_id").toString();
             String longitude_check=(String)check_res.getString("longitude").toString();
             String latitude_check=(String)check_res.getString("latitude").toString();
 
-            String result = DBconnect.executeQuery("UPDATE map SET longitude = '" + longitude + "',latitude = '" + latitude + "' WHERE User_Id ='"+ID+"'");
+            String room = DBconnect.executeQuery("SELECT room_id FROM enter_room WHERE User_id = '"+ID+"'  ");
+            JSONObject room_id = new JSONArray(room).getJSONObject(0);
+            String Room_id=(String)room_id.getString("room_id").toString();
+
+            if(Check_res == null ||Check_res == ""){
+                String result = DBconnect.executeQuery("INSERT INTO map (map_id,User_id,longitude,latitude) VALUE ('"+Room_id+"','"+ID+"','"+longitude+"','"+latitude+"')");
+            }else{
+                String result = DBconnect.executeQuery("UPDATE map SET longitude = '" + longitude + "',latitude = '" + latitude + "' WHERE User_Id ='"+ID+"'");
+            }
         }
         catch (JSONException e){
             System.out.println("mapDB connect failed");
@@ -197,6 +208,36 @@ public class MapItem {
     private static double rad(double d)
     {
         return d * Math.PI / 180.0;
+    }
+
+    public JSONArray item_set(){
+        Thread item_get = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                item_get();
+            }
+        });
+        item_get.start();
+        try {
+            item_get.join();
+        } catch (InterruptedException e) {
+            System.out.println("執行序被中斷");
+        }
+        return jsonArray;
+    }
+
+    private JSONArray item_get() {  //道具放置
+        try {
+            String result = DBconnect.executeQuery("SELECT * FROM playeritem WHERE User_id = '"+ID+"'");
+            JSONArray jsonArray_get = new JSONArray(result);
+            System.out.println("connect ok");
+            jsonArray =jsonArray_get;
+            return jsonArray;
+        } catch (Exception e) {
+            Log.e("log_tag", e.toString());
+            System.out.println("connect failed");
+        }
+        return jsonArray;
     }
 
 }
