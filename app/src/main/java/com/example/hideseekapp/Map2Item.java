@@ -30,9 +30,9 @@ public class Map2Item {
 
     public JSONArray item_get(){
         try {
-            String result = DBconnect.executeQuery("SELECT * FROM item WHERE item_id = '"+item_id+"'");
+            String result = DBconnect.executeQuery("SELECT * FROM item WHERE item_id <= '3'");
             JSONArray jsonArray_get = new JSONArray(result);
-            System.out.println("SELECT * FROM item WHERE item_id = '"+item_id+"'");
+            System.out.println("SELECT * FROM item WHERE item_id <= '3'");
             System.out.println("connect ok");
             jsonArray =jsonArray_get;
             return jsonArray;

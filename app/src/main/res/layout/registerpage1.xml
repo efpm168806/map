@@ -144,23 +144,17 @@
 
             <Button
                 android:id="@+id/back"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:onClick="activity_main"
-                android:text="上一頁" />
+                android:layout_width="100dp"
+                android:layout_height="55dp"
+                android:background="@drawable/back"
+                android:onClick="activity_main" />
 
             <Button
                 android:id="@+id/register"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:text="確認" />
+                android:layout_width="100dp"
+                android:layout_height="55dp"
+                android:background="@drawable/correct" />
         </LinearLayout>
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/reigsterpage1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="registerpage1" />
 
 </android.support.constraint.ConstraintLayout>

@@ -3,6 +3,7 @@ package com.example.hideseekapp;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -82,9 +84,13 @@ public class inroom extends Activity implements View.OnClickListener {
                     LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                     View inroom = inflater.inflate(R.layout.newplayer, null);
                     TextView AddPlayer = inroom.findViewById(R.id.Player);
+                    ImageView playerImg = inroom.findViewById(R.id.playerImg);
                     Layout.addView(inroom, Layout.getChildCount() - 1);
                     player_list2.add(AddPlayer);
-                    AddPlayer.setText("玩家:" + player_id);
+                    AddPlayer.setText("\n玩家 : " + player_id);
+                    AddPlayer.setTextSize(21);
+                    AddPlayer.setTextColor(Color.BLACK);
+                    playerImg.setImageResource(R.drawable.boy);
                 }
 
                 System.out.println("player_data:" + player_list);

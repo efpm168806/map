@@ -147,24 +147,18 @@
 
             <Button
                 android:id="@+id/back"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:text="上一頁" />
+                android:layout_width="110dp"
+                android:layout_height="55dp"
+                android:background="@drawable/back" />
 
             <Button
                 android:id="@+id/agreepage"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:onClick="agreepage"
-                android:text="送出" />
+                android:layout_width="110dp"
+                android:layout_height="55dp"
+                android:background="@drawable/register"
+                android:onClick="agreepage" />
         </LinearLayout>
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="registerpage2" />
 
 
 </android.support.constraint.ConstraintLayout>

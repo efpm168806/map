@@ -3,9 +3,15 @@ package com.example.hideseekapp;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.CountDownTimer;
@@ -15,8 +21,11 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,6 +47,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+
+import static java.lang.Integer.parseInt;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback ,View.OnClickListener {
     Handler handler = new Handler();
@@ -45,6 +57,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final int REQUEST_LOCATION = 2;
     static double Latitude;
     static double Longitude;
+    static double Latitude2=0;
+    static double Longitude2=0;
+    double totaldis=0;
     ArrayList<String> item_list = new ArrayList<>();
     ImageButton baggage;
     JSONArray item_all ,item2_all;
@@ -53,6 +68,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String ID;
     String[][] list;
     int a;
+
+    private SensorManager mSensorManager;
+    private Sensor mAccelerometer;
+    private TestSensorListener mSensorListener;
+
+    Context context = MapsActivity.this;
+    int missionResult=0;//任務結果,0為失敗1為成功
+    CountDownTimer time;
+    String ex=new String();//運算式
+    int correct=0;//運算式解答
+    double sensor_num;
+    String number;
+    double numberdo;
+    double check = 0;
+    int mission_times=0;
+    private static final double EARTH_RADIUS = 6378.137;
 
     private Runnable runnable = new Runnable() {
         @Override
@@ -82,6 +113,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         game_state();
+
+        mSensorListener = new TestSensorListener();
+        mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+        //隨機挑選任務
+        int missionNum = (int) (Math.random() * 3 + 1);
+        //missionNum=2;
+        //彈出視窗
+        AlertDialog(missionNum);
 
         try{    //讀取ID
             FileInputStream inputStream = openFileInput(fileName);
@@ -193,17 +234,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     , 15));
             Latitude = location.getLatitude();
             Longitude = location.getLongitude();
+
+            //計算距離
+
+            if (Latitude2 == 0 && Longitude2 == 0) {
+                Latitude2 = Latitude;
+                Longitude2 = Longitude;
+            } else {
+                totaldis += D_jw(Latitude, Longitude, Latitude2, Longitude2);
+                Latitude2 = Latitude;
+                Longitude2 = Longitude;
+            }
+
+
             MapItem MapItem = new MapItem(Longitude ,Latitude,ID);
             MapItem.map_update();
-//        mMap.setOnMyLocationButtonClickListener(
-//                new GoogleMap.OnMyLocationButtonClickListener() {
-//                    @Override
-//                    public boolean onMyLocationButtonClick() {
-//                        //透過位置服務，取得目前裝置所在
-//                        gpsLocation();
-//                        return false;
-//                    }
-//                });
+
         }
     }
     //標誌全部玩家的位置
@@ -349,7 +395,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 String item_num_check = DBconnect.executeQuery("SELECT item_num FROM playeritem WHERE User_id='"+ID+"' AND item_id ='"+item_index+"'");
                     JSONObject item_num = new JSONArray(item_num_check).getJSONObject(0);
                     String Item_num=(String)item_num.getString("item_num").toString();
-                    int num = Integer.parseInt(Item_num);
+                    int num = parseInt(Item_num);
                     int one = '1';
                     int end = num - one;
                     String result2 = DBconnect.executeQuery("UPDATE playeritem SET item_num = "+end+" WHERE User_id = '"+ID+"' AND item_id ='"+item_index+"' ");
@@ -452,13 +498,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         item_num = jsonObject.getString("item_num");
                         Map2Item Map2Item = new Map2Item(item_id);
                         item2_all = Map2Item.item_set();
-                        System.out.println("item2_all:"+item2_all);
-                        System.out.println("item_num:"+item_num);
-                        for(int j= 0 ; j<1; j++){
-                            JSONObject jsonObject2 = item2_all.getJSONObject(i);
-                            item_name = jsonObject2.getString("item_name");
-                            item_list.add(item_name + "   X " + item_num);
-                        }
+                        JSONObject jsonObject2 = item2_all.getJSONObject(i);
+                        item_name = jsonObject2.getString("item_name");
+                        item_list.add(item_name + "   X " + item_num);
                     }
                     System.out.println("item_list:" + item_list);
                 } catch (JSONException e) {
@@ -486,6 +528,356 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 break;
 
         }
+    }
+
+    public void AlertDialog(final int missionNum) {
+        String missionStr[] = {"30秒內跑完100公尺","30秒內跳完25下開合跳","10秒內解出運算式解答"};
+        ImageView iv = new ImageView(context);
+        iv.setImageResource(R.drawable.gift);
+
+        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(this);
+        builder.setTitle("自由任務")
+                .setMessage("\n\n\n" + missionStr[missionNum-1] + "\n\n\n\n完成可獲得道具獎勵!\n\n\n")
+                .setView(iv)
+                .setPositiveButton("接受", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //呼叫mission alert
+                        dialog.dismiss();
+                        mission(missionNum);
+                    }
+                });
+        builder.setNegativeButton("拒絕", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        android.support.v7.app.AlertDialog dialog = builder.create();
+        dialog.show();
+
+        // 取得 AlertDialog Message, 然後設定對齊位置為水平置中
+        TextView messageText = (TextView) dialog.findViewById(android.R.id.message);
+        messageText.setGravity(Gravity.CENTER_HORIZONTAL);
+        messageText.setTextSize(20);
+        messageText.setTextColor(Color.DKGRAY);
+        //設定title
+        TextView tvTitle = (TextView) dialog.findViewById(R.id.alertTitle);
+        tvTitle.setTextSize(30);
+        tvTitle.setTextColor(Color.BLUE);
+        //設定按鈕
+        dialog.getButton(android.support.v7.app.AlertDialog.BUTTON_POSITIVE).setTextColor(Color.BLACK);
+        dialog.getButton(android.support.v7.app.AlertDialog.BUTTON_POSITIVE).setTextSize(18);
+        dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(Color.BLACK);
+        dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextSize(18);
+    }
+
+
+    public void mission(final int missionNum){
+
+        final android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(this);
+        final EditText editText=new EditText(context);
+
+        //產生算數
+        char[] operator=new char[]{'+','-','*','/'};
+        Random random=new Random();
+
+        //產生運算式
+        int n=2;//兩個運算元
+        int[] number=new int[n+1];
+
+        String[] symbol=new String[n];
+        for(int j=0;j<=n;j++){
+            number[j]=random.nextInt(10)+1;
+        }
+        for(int j=0;j<n;j++){
+            int s=random.nextInt(4);
+            ex+=String.valueOf(number[j])+String.valueOf(operator[s]);
+            if(s==3){number[j+1]=decide(number[j],number[j+1]);}
+            symbol[j]= String.valueOf(operator[s]);
+        }
+        ex+=String.valueOf(number[n]);
+
+        //運算答案
+        switch (symbol[0]){
+            case "+":
+                switch (symbol[1]){
+                    case "+":
+                        correct=number[0]+number[1]+number[2];
+                        break;
+                    case "-":
+                        correct=number[0]+number[1]-number[2];
+                        break;
+                    case "*":
+                        correct=number[0]+number[1]*number[2];
+                        break;
+                    case "/":
+                        correct=number[0]+number[1]/number[2];
+                        break;
+                }
+                break;
+            case "-":
+                switch (symbol[1]){
+                    case "+":
+                        correct=number[0]-number[1]+number[2];
+                        break;
+                    case "-":
+                        correct=number[0]-number[1]-number[2];
+                        break;
+                    case "*":
+                        correct=number[0]-number[1]*number[2];
+                        break;
+                    case "/":
+                        correct=number[0]-number[1]/number[2];
+                        break;
+                }
+                break;
+            case "*":
+                switch (symbol[1]){
+                    case "+":
+                        correct=number[0]*number[1]+number[2];
+                        break;
+                    case "-":
+                        correct=number[0]*number[1]-number[2];
+                        break;
+                    case "*":
+                        correct=number[0]*number[1]*number[2];
+                        break;
+                    case "/":
+                        correct=number[0]*number[1]/number[2];
+                        break;
+                }
+                break;
+            case "/":
+                switch (symbol[1]){
+                    case "+":
+                        correct=number[0]/number[1]+number[2];
+                        break;
+                    case "-":
+                        correct=number[0]/number[1]-number[2];
+                        break;
+                    case "*":
+                        correct=number[0]/number[1]*number[2];
+                        break;
+                    case "/":
+                        correct=number[0]/number[1]/number[2];
+                        break;
+                }
+                break;
+        }
+
+        //呼叫任務alert
+        if(missionNum == 1){
+            builder.setMessage("000");
+        }else if(missionNum == 2){
+            builder.setMessage("000");
+        }else if(missionNum == 3) {
+            builder.setMessage("000")
+                    .setView(editText)
+                    .setPositiveButton("確定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //判斷答案對錯寫在這,如果對就missionResult=1
+                            String culResult=editText.getText().toString();
+                            Log.i("culresult",culResult);
+                            if (parseInt(String.valueOf(culResult)) == correct) {
+                                missionResult = 1;
+                                time.cancel();
+                                result(missionResult);
+                            } else {
+                                missionResult = 0;
+                                time.cancel();
+                                result(missionResult);
+                            }
+
+                        }
+                    });
+
+        }
+
+        android.support.v7.app.AlertDialog dialog = builder.create();
+        dialog.show();
+        // 取得 AlertDialog Message, 然後設定對齊位置為水平置中
+        final TextView messageText = (TextView) dialog.findViewById(android.R.id.message);
+        messageText.setGravity(Gravity.CENTER_HORIZONTAL);
+        messageText.setTextSize(25);
+        messageText.setTextColor(Color.DKGRAY);
+        //設定title
+        final TextView tvTitle = (TextView) dialog.findViewById(R.id.alertTitle);
+        tvTitle.setTextSize(30);
+        tvTitle.setTextColor(Color.BLUE);
+        //設定按鈕
+        dialog.getButton(android.support.v7.app.AlertDialog.BUTTON_POSITIVE).setTextColor(Color.BLACK);
+        dialog.getButton(android.support.v7.app.AlertDialog.BUTTON_POSITIVE).setTextSize(18);
+
+
+
+
+        //計時器倒數
+        int missionTime[]={31000,31000,11000};
+        time =new CountDownTimer(missionTime[missionNum-1], 1000) {
+            public void onTick(long millisUntilFinished) {
+                switch (missionNum){
+                    case 1:
+                        messageText.setText("\n\n"+millisUntilFinished / 1000+"秒內跑完100公尺\n\n目前已完成"+(int)totaldis+"公尺\n\n");
+                        if((int)totaldis>=100){
+                            missionResult=1;
+                            result(missionResult);
+                            Latitude2=0;
+                            Longitude2=0;
+                            time.cancel();
+                        }
+                        break;
+                    case 2:
+                        call_z();
+                        messageText.setText("\n\n"+millisUntilFinished / 1000+"秒內跳完25下開合跳\n\n目前已完成"+mission_times+"下\n\n");
+                        //任務內容
+                        //相Z值設定為正到負之間(負值-正值 手臂放下到舉過肩膀)
+                        if(numberdo<0&&check==0){
+                            check=1;
+                        }else if(numberdo>0) {
+                            if (check == 1) {
+                                mission_times++;
+                                check = 0;
+                            }
+                        }
+                        if(mission_times>=25){
+                            missionResult=1;
+                            result(missionResult);
+                            time.cancel();
+                        }
+
+                        break;
+                    case 3:
+                        messageText.setText("\n\n"+millisUntilFinished / 1000+"秒內解出答案\n\n\n"+ex+"\n\n");
+                        break;
+                }
+            }
+            public void onFinish() {
+                messageText.setText("\n\n\n時間到！\n\n\n");
+                missionResult=1;
+                result(missionResult);
+            }
+        }.start();
+    }
+
+    public void result(int missionResult){
+        final android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(this);
+        ImageView iv=new ImageView(context);
+        iv.setImageResource(R.drawable.crying);
+        int item=(int) (Math.random() * 3 + 1);//隨機道具
+        String itemText[]={"FakeGPS","影分身之術","隱形斗篷"};
+
+        ImageView itemPic=new ImageView(context);//道具圖片
+        switch (item){
+            case 1:
+                itemPic.setImageResource(R.drawable.fakegps);
+                itemPic.setMaxHeight(10);
+                break;
+            case 2:
+                itemPic.setImageResource(R.drawable.shadow);
+                itemPic.setMaxHeight(10);
+                break;
+            case 3:
+                itemPic.setImageResource(R.drawable.invisible);
+                itemPic.setMaxHeight(10);
+                break;
+        }
+
+
+        if(missionResult == 0){
+            builder.setMessage("任務失敗")
+                    .setView(iv);
+
+        }else if(missionResult == 1){
+            builder.setMessage("任務成功\n\n獲得  "+itemText[item-1])
+                    .setView(itemPic);
+        }
+
+        android.support.v7.app.AlertDialog dialog = builder.create();
+        dialog.show();
+
+        // 取得 AlertDialog Message, 然後設定對齊位置為水平置中
+        TextView messageText = (TextView) dialog.findViewById(android.R.id.message);
+        messageText.setGravity(Gravity.CENTER_HORIZONTAL);
+        messageText.setTextSize(30);
+        messageText.setTextColor(Color.DKGRAY);
+    }
+    private static int decide(int x,int y){
+        Random random=new Random();
+        if(x%y!=0){
+            y=random.nextInt(100)+1;
+            return decide(x,y);
+        }
+        else{
+            return y;
+        }
+    }
+
+    @Override protected void onResume() {
+        super.onResume(); // 註冊感測器監聽函式
+        mSensorManager.registerListener(mSensorListener, mAccelerometer, SensorManager.SENSOR_DELAY_UI);
+    }
+
+    @Override protected void onPause() { super.onPause();
+        // 登出監聽函式
+        mSensorManager.unregisterListener(mSensorListener);
+
+    }
+
+//    private void initViews() {
+//        mSensorInfoA = (TextView) findViewById(R.id.sensor_info_a);
+//    }
+
+    class TestSensorListener implements SensorEventListener {
+
+        @Override
+
+        public void onSensorChanged(SensorEvent event) {
+            // 讀取加速度感測器數值,values陣列0,1,2分別對應x,y,z軸的加速度
+            Log.i("onSensorChanged", "onSensorChanged: " + event.values[0] + ", " + event.values[1] + ", " + event.values[2]);
+            sensor_num = event.values[2];
+        }
+        @Override
+
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            Log.i("onAccuracyChanged", "onAccuracyChanged");
+        }
+    }
+
+    public void call_z(){
+        Log.i("call_z", "call function call");
+        numberdo = sensor_num;
+    }
+
+    private static double rad(double d)
+    {
+        return d * Math.PI / 180.0;
+    }
+
+    public static double GetDistance(double lat1, double lng1, double lat2, double lng2)
+    {
+        double radLat1 = rad(lat1);
+        double radLat2 = rad(lat2);
+        double a = radLat1 - radLat2;
+        double b = rad(lng1) - rad(lng2);
+        double s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a/2),2) +
+                Math.cos(radLat1)*Math.cos(radLat2)*Math.pow(Math.sin(b/2),2)));
+        s = s * EARTH_RADIUS;
+        s = Math.round(s * 10000) / 10000;
+        return s;
+    }
+    public static double D_jw(double wd1,double jd1,double wd2,double jd2)
+    {
+        double x,y,out;
+        double PI=3.14159265;
+        double R=6.371229*1e6;
+
+        x=(jd2-jd1)*PI*R*Math.cos( ((wd1+wd2)/2) *PI/180)/180;
+        y=(wd2-wd1)*PI*R/180;
+        out=Math.hypot(x,y);
+        return out;
     }
 
 }

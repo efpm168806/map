@@ -18,11 +18,26 @@
         app:layout_constraintVertical_bias="1.0">
 
 
-        <TextView
-            android:id="@+id/Player"
-            android:layout_width="400dp"
-            android:layout_height="125dp"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="玩家" />
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/playerImg"
+                android:layout_width="229dp"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/boy" />
+
+            <TextView
+                android:id="@+id/Player"
+                android:layout_width="400dp"
+                android:layout_height="79dp"
+                android:layout_weight="1"
+                android:text="玩家" />
+        </LinearLayout>
+
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

@@ -3,6 +3,7 @@ package com.example.hideseekapp;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -85,6 +86,8 @@ public class seekroom extends Activity implements View.OnClickListener {
                     add.add(AddRoom);
                     System.out.println("AddRoom資訊:" + AddRoom);
                     AddRoom.setText("房號:" + Integer.toString(Room_id) + "\n" + Room_name);
+                    AddRoom.setTextSize(20);
+                    AddRoom.setTextColor(Color.BLACK);
                     final int room_click = Room_id;
 
                     AddRoom.setOnClickListener(new View.OnClickListener() {
@@ -104,6 +107,8 @@ public class seekroom extends Activity implements View.OnClickListener {
                 }
             }else{
                 Room.setText("目前無房間，請開創新房間!!");
+                Room.setTextColor(Color.BLACK);
+                Room.setTextSize(20);
             }
         }catch (JSONException e){
 
