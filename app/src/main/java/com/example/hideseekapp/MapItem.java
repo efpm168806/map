@@ -9,9 +9,11 @@ import org.json.JSONObject;
 public class MapItem {
     double latitude ,longitude;
     String ID;
+    String Ghost_stay = null;
     String[][]list;
     String[][]list2;
     int a;
+    int a2;
     JSONArray jsonArray;
     private static final double EARTH_RADIUS = 6378.137;
 
@@ -22,60 +24,45 @@ public class MapItem {
     }
 
     public void map_update() {
-        Thread mapDB = new Thread(new Runnable() {
+        Log.i("map_update","go to map_update function");
+        Thread map_DB = new Thread(new Runnable() {
             @Override
             public void run() {
                 mapDB();
             }
         });
-        mapDB.start();
+        map_DB.start();
         try {
-            mapDB.join();
+            map_DB.join();
             //抓取其他玩家的位置以及是否使用道具
             location_get();
             //判斷是否有進入鬼的抓人範圍
             ghostcatch();
         } catch (InterruptedException e) {
             System.out.println("執行序被中斷");
+            Log.i("map_update","XXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
         }
     }
 
     private void mapDB(){
-        try{
-            String check = DBconnect.executeQuery("SELECT longitude,latitude FROM map WHERE User_id = '"+ID+"'  ");
-            JSONObject check_res = new JSONArray(check).getJSONObject(0);
-            String Check_res=(String)check_res.getString("room_id").toString();
-            String longitude_check=(String)check_res.getString("longitude").toString();
-            String latitude_check=(String)check_res.getString("latitude").toString();
-
-            String room = DBconnect.executeQuery("SELECT room_id FROM enter_room WHERE User_id = '"+ID+"'  ");
-            JSONObject room_id = new JSONArray(room).getJSONObject(0);
-            String Room_id=(String)room_id.getString("room_id").toString();
-
-            if(Check_res == null ||Check_res == ""){
-                String result = DBconnect.executeQuery("INSERT INTO map (map_id,User_id,longitude,latitude) VALUE ('"+Room_id+"','"+ID+"','"+longitude+"','"+latitude+"')");
-            }else{
-                String result = DBconnect.executeQuery("UPDATE map SET longitude = '" + longitude + "',latitude = '" + latitude + "' WHERE User_Id ='"+ID+"'");
-            }
-        }
-        catch (JSONException e){
-            System.out.println("mapDB connect failed");
-        }
+        String result = DBconnect.executeQuery("UPDATE map SET longitude = '" + longitude + "',latitude = '" + latitude + "' WHERE User_Id ='"+ID+"'");
     }
 
 
     public void location_get() {
-        Thread locationDB = new Thread(new Runnable() {
+        Thread location_DB = new Thread(new Runnable() {
             @Override
             public void run() {
                 locationDB();
             }
         });
-        locationDB.start();
+        location_DB.start();
         try {
-            locationDB.join();
+            location_DB.join();
+            makepoint_middle_stay(Ghost_stay,list2,a2);
         } catch (InterruptedException e) {
             System.out.println("執行序被中斷");
+            Log.i("location_get","XXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
         }
     }
     //取得其他玩家的位置
@@ -104,40 +91,45 @@ public class MapItem {
             JSONObject ghost2 = new JSONArray(ghost).getJSONObject(0);
             String Ghost=(String)ghost2.getString("ghost").toString();
 
+            Log.i("XXXX",Ghost);
+
+
             //將同個房間內玩家的資訊(ID、經緯度、道具)放入list陣列並傳回MapsActivity來做標點
-            MapsActivity MapsActivity = new MapsActivity();
-            MapsActivity.MakePoint(Ghost);
-            MapsActivity.getlist(MapsActivityList(list),MapsActivityA(a));
+            Ghost_stay = null;
+            Ghost_stay = Ghost;
+
+            list2 = list;
+            a2 = jsonArray.length();
+            Log.i("XXXX", String.valueOf(list2));
+            Log.i("a2", String.valueOf(a2));
         }
         catch(JSONException e){
-            System.out.println("location_get connect failed");
+            Log.i("locationDB","XXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
         }
     }
-
-    public String[][] MapsActivityList(String[][] list2) {
-        this.list2 = list2;
-        return list2;
+    //將同個房間內玩家的資訊(ID、經緯度、道具)放入list陣列並傳回MapsActivity來做標點
+    public void makepoint_middle_stay(String Ghost,String[][]list2,int a2) {
+        MapsActivity MapsActivity = new MapsActivity();
+        MapsActivity.getlist(list2, a2);
+        Log.i("呼叫getlist", "XXXXXXXXXXXXXXXX");
+        MapsActivity.MakePoint(Ghost);
+        Log.i("呼叫MAKEPOINT", "XXXXXXXXXXXXXXXX");
     }
 
-    public int MapsActivityA(int a) {
-        this.a = a;
-        return a;
-    }
 
     public void ghostcatch(){
-        Thread ghostcatch_DB = new Thread(new Runnable() {
+        Thread ghostcatchDB = new Thread(new Runnable() {
             @Override
             public void run() {
                 ghostcatch_DB();
             }
         });
-        ghostcatch_DB.start();
+        ghostcatchDB.start();
         try {
-            ghostcatch_DB.join();
+            ghostcatchDB.join();
         } catch (InterruptedException e) {
-            System.out.println("執行序被中斷");
+            Log.i("ghostcatch","XXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
         }
-
     }
     //鬼抓人判斷
     public void ghostcatch_DB(){
@@ -155,14 +147,14 @@ public class MapItem {
             int g = ghostArray.length();
             int s = survivorArray.length();
 
-            String[][] g_list = new String[g][2];
+            String[][] g_list = new String[g][3];
             for(int i=0;i<g;i++){
                 JSONObject jsonData = ghostArray.getJSONObject(i);
                 g_list[i][0]=(String)jsonData.getString("User_id").toString();
                 g_list[i][1]=(String)jsonData.getString("longitude").toString();
                 g_list[i][2]=(String)jsonData.getString("latitude").toString();
             }
-            String[][] s_list = new String[s][3];
+            String[][] s_list = new String[s][4];
             for(int i=0;i<s;i++){
                 JSONObject jsonData = survivorArray.getJSONObject(i);
                 s_list[i][0]=(String)jsonData.getString("User_id").toString();
@@ -200,7 +192,7 @@ public class MapItem {
             }
         }
         catch(JSONException e){
-            System.out.println("ghostcatch_DB");
+            Log.i("ghostcatch_DB","XXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
         }
     }
 

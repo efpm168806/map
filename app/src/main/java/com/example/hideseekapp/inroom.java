@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -33,7 +34,8 @@ public class inroom extends Activity implements View.OnClickListener {
     JSONArray player_all;
     ArrayList<String> player_list = new ArrayList<>();
     ArrayList<TextView> player_list2 = new ArrayList<>();
-
+    String sexStr;
+    ImageView playerImg;
     private Runnable run =new Runnable(){
         @Override
         public void run() {
@@ -84,13 +86,13 @@ public class inroom extends Activity implements View.OnClickListener {
                     LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                     View inroom = inflater.inflate(R.layout.newplayer, null);
                     TextView AddPlayer = inroom.findViewById(R.id.Player);
-                    ImageView playerImg = inroom.findViewById(R.id.playerImg);
+                    playerImg = inroom.findViewById(R.id.playerImg);
                     Layout.addView(inroom, Layout.getChildCount() - 1);
                     player_list2.add(AddPlayer);
                     AddPlayer.setText("\n玩家 : " + player_id);
                     AddPlayer.setTextSize(21);
                     AddPlayer.setTextColor(Color.BLACK);
-                    playerImg.setImageResource(R.drawable.boy);
+                    setPlayerImg();
                 }
 
                 System.out.println("player_data:" + player_list);
@@ -129,5 +131,43 @@ public class inroom extends Activity implements View.OnClickListener {
                 startActivity(intent);
                 break;
         }
+    }
+    private void setPlayerImg() {
+
+        Thread setImg=new Thread(new Runnable(){
+            @Override
+            public void run() {
+                try {
+                    String Sex = DBconnect.executeQuery("SELECT User_sex FROM user WHERE User_id = '"+ID+"' ");
+                    JSONObject sexjson = new JSONArray(Sex).getJSONObject(0);
+                    sexStr= sexjson.getString("User_sex");
+                    Log.i("sex",sexStr);
+                }catch (JSONException e){
+                    e.printStackTrace();
+                }
+
+            }
+        });
+        setImg.start();
+        try {
+            setImg.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        String male="男",female="女";
+        if(sexStr.equals(male)){
+            playerImg.setImageResource(R.drawable.boy);
+        }else if(sexStr.equals(female)){
+            playerImg.setImageResource(R.drawable.girl);
+        }
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            return true;
+        }
+        return false;
     }
 }

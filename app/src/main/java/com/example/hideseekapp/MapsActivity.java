@@ -53,7 +53,7 @@ import static java.lang.Integer.parseInt;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback ,View.OnClickListener {
     Handler handler = new Handler();
-    private GoogleMap mMap;
+    static GoogleMap mMap;
     private static final int REQUEST_LOCATION = 2;
     static double Latitude;
     static double Longitude;
@@ -98,6 +98,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     };
 
     public void getlist(String[][] list,int a){
+        Log.i("list", String.valueOf(list));
+        Log.i("a", String.valueOf(a));
         this.list = list;
         this.a = a;
     }
@@ -118,11 +120,50 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
-        //隨機挑選任務
-        int missionNum = (int) (Math.random() * 3 + 1);
-        //missionNum=2;
-        //彈出視窗
-        AlertDialog(missionNum);
+        //發放第一次任務
+        new CountDownTimer(10000,1000){
+            public void onTick(long millisUntilFinished) {
+
+            }
+
+            public void onFinish() {
+                //隨機挑選任務
+                int missionNum = (int) (Math.random() * 3 + 1);
+                //missionNum=2;
+                //彈出視窗
+                AlertDialog(missionNum);
+            }
+        }.start();
+
+        //發放第二次任務
+        new CountDownTimer(2500000,1000){
+            public void onTick(long millisUntilFinished) {
+
+            }
+
+            public void onFinish() {
+                //隨機挑選任務
+                int missionNum = (int) (Math.random() * 3 + 1);
+                //missionNum=2;
+                //彈出視窗
+                AlertDialog(missionNum);
+            }
+        }.start();
+
+        //發放第三次任務
+        new CountDownTimer(4800000,1000){
+            public void onTick(long millisUntilFinished) {
+
+            }
+
+            public void onFinish() {
+                //隨機挑選任務
+                int missionNum = (int) (Math.random() * 3 + 1);
+                //missionNum=2;
+                //彈出視窗
+                AlertDialog(missionNum);
+            }
+        }.start();
 
         try{    //讀取ID
             FileInputStream inputStream = openFileInput(fileName);
@@ -141,21 +182,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         } catch (Exception e){
             e.printStackTrace();
         }
-
+        game_state_DB();
     }
+
+    public void game_state_DB(){
+
+        Thread game_stateDB = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                game_state();
+            }
+        });
+        game_stateDB.start();
+        try {
+            game_stateDB.join();
+            game_start();
+        } catch (InterruptedException e) {
+            System.out.println("執行序被中斷");
+            Log.i("game_state_DB","XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        }
+    }
+
     //check game statement start or not
     public void game_state(){
         try{
-            String game_state = DBconnect.executeQuery("SELECT game_state FROM map WHERE User_id = '"+ID+"' ");
-            JSONObject game = new JSONArray(game_state).getJSONObject(0);
-            String Game_state=(String)game.getString("game_state").toString();
-            if(Game_state==""||Game_state==null||Game_state=="0"){
-                String result = DBconnect.executeQuery("UPDATE map SET game_state= '1' WHERE User_id = '"+ID+"'");
-                game_start();
-            }else{
-                //game already start so do nothing
-            }
+            String room = DBconnect.executeQuery("SELECT room_id FROM enter_room WHERE User_id = '"+ID+"' ");
+            JSONObject room_id = new JSONArray(room).getJSONObject(0);
+            String Room_id=(String)room_id.getString("room_id").toString();
+            Log.i("XXXXX",Room_id);
 
+            //String result = DBconnect.executeQuery("INSERT INTO map (User_id,map_id,game_state) VALUES ('"+ID+"','"+Room_id+"','1')");
+            //測試讓他先不是鬼
+            String result = DBconnect.executeQuery("INSERT INTO map (User_id,map_id,game_state,ghost) VALUES ('"+ID+"','"+Room_id+"','1','0')");
         }
         catch (JSONException e){
 
@@ -170,7 +229,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             String result = DBconnect.executeQuery("UPDATE map SET game_state= '0' WHERE User_id = '"+ID+"'");
         }
         catch (JSONException e){
-
+            Log.i("game_finish","XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
         }
     }
     //start game total time count down
@@ -199,8 +258,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * installed Google Play services and returned to the app.
      */
     @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
+    public void onMapReady(GoogleMap mMap) {
+        this.mMap = mMap;
         handler.postDelayed(runnable, 1000);
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -214,7 +273,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLng(start));
         mMap.addMarker(new MarkerOptions().position(start).title("起點!!"));
         mMap.getUiSettings().setZoomControlsEnabled(true);
-
     }
 
 
@@ -254,8 +312,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
     //標誌全部玩家的位置
     public void MakePoint(String Ghost){
+        Log.i("MAKEPOINT","MAKEPOINT");
+        Log.i("list", String.valueOf(list));
+        String test123 = list[0][1];
+        String test456 = list[0][2];
+        Log.i("test123", list[0][1]);
+        Log.i("test456", list[0][2]);
         mMap.clear();
-        //不是鬼的人的畫面
+//        不是鬼的人的畫面
         if(Ghost=="0"){
             for(int i=0 ; i<a ; i++){
                 double lat = Double.parseDouble(list[i][2]);
@@ -305,7 +369,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.addMarker(new MarkerOptions().position(myself).title("me"));
 
             //鬼玩家的畫面
-        }else{
+        }else if(Ghost=="1"){
             for(int i=0 ; i<a ; i++){
                 //如果鬼看到鬼
                 if(list[i][4]=="1"){

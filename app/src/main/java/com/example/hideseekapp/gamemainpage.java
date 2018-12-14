@@ -6,10 +6,15 @@ import android.content.Intent;
 import android.media.Image;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -28,7 +33,7 @@ public class gamemainpage extends AppCompatActivity implements View.OnClickListe
 //    });
         Button chooseroom;
         ImageButton personal ,setting ,bag ,shop;
-        String FileName ="Login" ,ID;
+        String FileName ="Login" ,ID ,sexStr;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,6 +67,37 @@ public class gamemainpage extends AppCompatActivity implements View.OnClickListe
         shop.setOnClickListener(this);
         chooseroom.setOnClickListener(this);
 
+        setPlayerImg();
+    }
+
+    private void setPlayerImg() {
+        Thread setImg=new Thread(new Runnable(){
+            @Override
+            public void run() {
+                try {
+                    String Sex = DBconnect.executeQuery("SELECT User_sex FROM user WHERE User_id = '"+ID+"' ");
+                    JSONObject sexjson = new JSONArray(Sex).getJSONObject(0);
+                    sexStr= sexjson.getString("User_sex");
+                    Log.i("sex",sexStr);
+                }catch (JSONException e){
+                    e.printStackTrace();
+                }
+
+            }
+        });
+        setImg.start();
+        try {
+            setImg.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        String male="男",female="女";
+        if(sexStr.equals(male)){
+            personal.setImageResource(R.drawable.boy);
+        }else if(sexStr.equals(female)){
+            personal.setImageResource(R.drawable.girl);
+        }
     }
 
     @Override
@@ -77,11 +113,11 @@ public class gamemainpage extends AppCompatActivity implements View.OnClickListe
                 startActivity(intent);
                 break;
             case R.id.bag:
-                intent.setClass(gamemainpage.this, shoppage.class);
+                intent.setClass(gamemainpage.this, bagpage.class);
                 startActivity(intent);
                 break;
             case R.id.shop:
-                intent.setClass(gamemainpage.this, seekroom.class);
+                intent.setClass(gamemainpage.this, shoppage.class);
                 startActivity(intent);
                 break;
             case R.id.chooseroom:

@@ -53,7 +53,9 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="帳號 : " />
+                android:text="帳號 : "
+                android:textColor="#000"
+                android:textSize="18dp"/>
 
             <EditText
                 android:id="@+id/id"
@@ -79,7 +81,9 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="密碼 : " />
+                android:text="密碼 : "
+                android:textColor="#000"
+                android:textSize="18dp"/>
 
             <EditText
                 android:id="@+id/pwd"

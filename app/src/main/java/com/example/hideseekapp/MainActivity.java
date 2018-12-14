@@ -2,6 +2,7 @@ package com.example.hideseekapp;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Button;
@@ -82,6 +83,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         outputStream.close();
 
                         textView.setText("登入成功!!");
+                        textView.setTextColor(Color.GREEN);
                         intent.setClass(MainActivity.this, gamemainpage.class);
                         startActivity(intent);
 
@@ -93,6 +95,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                 }else{
                     textView.setText("帳號密碼有誤!!");
+                    textView.setTextColor(Color.RED);
                     //帳密輸入失敗
 
                 }
