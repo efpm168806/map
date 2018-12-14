@@ -66,8 +66,12 @@ public class gamemainpage extends AppCompatActivity implements View.OnClickListe
         bag.setOnClickListener(this);
         shop.setOnClickListener(this);
         chooseroom.setOnClickListener(this);
-
         setPlayerImg();
+
+        Button draw;
+        draw =(Button)findViewById(R.id.draw);
+        draw.setOnClickListener(this);
+
     }
 
     private void setPlayerImg() {
@@ -122,6 +126,10 @@ public class gamemainpage extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.chooseroom:
                 intent.setClass(gamemainpage.this, seekroom.class);
+                startActivity(intent);
+                break;
+            case R.id.draw:
+                intent.setClass(gamemainpage.this, MapsActivity2.class);
                 startActivity(intent);
                 break;
         }
