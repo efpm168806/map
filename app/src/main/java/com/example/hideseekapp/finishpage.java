@@ -1,12 +1,16 @@
 package com.example.hideseekapp;
 
 import android.content.Intent;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 public class finishpage extends AppCompatActivity {
+    static MediaPlayer mPlayer;
     private Button cheek;
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -23,5 +27,27 @@ public class finishpage extends AppCompatActivity {
                 finishpage.this.finish();
             }
         });
+
+        MapsActivity.mPlayer.stop();
+        musicPlay();
+    }
+
+    //放音樂
+    public void musicPlay() {
+        try
+        {
+            mPlayer = MediaPlayer.create(this, R.raw.finish);
+            mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mPlayer.setLooping(true);
+            mPlayer.start();
+            Log.i("music","");
+            //重複播放
+        }catch (IllegalStateException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Log.e("musicerror",e.toString());
+
+        }
     }
 }

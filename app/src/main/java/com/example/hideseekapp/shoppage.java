@@ -45,16 +45,14 @@ public class shoppage extends AppCompatActivity implements View.OnClickListener 
         setContentView(R.layout.shoppage);
         Button back = (Button) findViewById(R.id.back);
         Button next = (Button) findViewById(R.id.next);
-        TextView item1 = (TextView)findViewById(R.id.item1);
-        TextView item2 = (TextView)findViewById(R.id.item2);
-        TextView item3 = (TextView)findViewById(R.id.item3);
-        TextView item4 = (TextView)findViewById(R.id.item4);
         back.setOnClickListener(this);
         next.setOnClickListener(this);
-        item1.setOnClickListener(this);
-        item2.setOnClickListener(this);
-        item3.setOnClickListener(this);
-        item4.setOnClickListener(this);
+        ImageButton buyInvisible = (ImageButton)findViewById(R.id.buyInvisible);
+        ImageButton buyShadow = (ImageButton)findViewById(R.id.buyShadow);
+        ImageButton buyfakeGPS = (ImageButton)findViewById(R.id.buyfakeGPS);
+        buyInvisible.setOnClickListener(this);
+        buyShadow.setOnClickListener(this);
+        buyfakeGPS.setOnClickListener(this);
     }
 
     @Override
@@ -68,7 +66,7 @@ public class shoppage extends AppCompatActivity implements View.OnClickListener 
                 intent.setClass(shoppage.this, gamemainpage.class);
                 startActivity(intent);
                 break;
-            case R.id.item1:
+            case R.id.buyInvisible:
                 shopItem shopItem =new shopItem(1 ,ID);
                 Judgment = shopItem.item_Judgment();
                 System.out.println(Judgment);
@@ -80,7 +78,7 @@ public class shoppage extends AppCompatActivity implements View.OnClickListener 
                     System.out.println("沒道具!!");
                 }
                 break;
-            case R.id.item2:
+            case R.id.buyShadow:
                 shopItem shopItem2 =new shopItem(2 ,ID);
                 Judgment = shopItem2.item_Judgment();
                 if(Judgment!=null){
@@ -91,7 +89,7 @@ public class shoppage extends AppCompatActivity implements View.OnClickListener 
                     System.out.println("沒道具!!");
                 }
                 break;
-            case R.id.item3:
+            case R.id.buyfakeGPS:
                 shopItem shopItem3 =new shopItem(3 ,ID);
                 Judgment = shopItem3.item_Judgment();
                 if(Judgment!=null){
@@ -99,17 +97,6 @@ public class shoppage extends AppCompatActivity implements View.OnClickListener 
                     System.out.println("有道具!!");
                 }else {
                     shopItem3.item_update();
-                    System.out.println("沒道具!!");
-                }
-                break;
-            case R.id.item4:
-                shopItem shopItem4 =new shopItem(4 ,ID);
-                Judgment = shopItem4.item_Judgment();
-                if(Judgment!=null){
-                    shopItem4.item_update2();
-                    System.out.println("有道具!!");
-                }else {
-                    shopItem4.item_update();
                     System.out.println("沒道具!!");
                 }
                 break;

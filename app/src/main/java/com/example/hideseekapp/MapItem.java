@@ -17,10 +17,11 @@ public class MapItem {
     JSONArray jsonArray;
     private static final double EARTH_RADIUS = 6378.137;
 
-    public MapItem(double  latitude, double longitude,String ID){
+    public MapItem(double longitude, double latitude,String ID){
         this.longitude = longitude;
         this.latitude = latitude;
         this.ID = ID;
+        Log.i("FUCK2",latitude+"++++++"+longitude);
     }
 
     public void map_update() {
@@ -45,6 +46,7 @@ public class MapItem {
     }
 
     private void mapDB(){
+        Log.i("FUCK3",latitude+"++++++"+longitude);
         String result = DBconnect.executeQuery("UPDATE map SET longitude = '" + longitude + "',latitude = '" + latitude + "' WHERE User_Id ='"+ID+"'");
     }
 
@@ -108,12 +110,10 @@ public class MapItem {
         }
     }
     //將同個房間內玩家的資訊(ID、經緯度、道具)放入list陣列並傳回MapsActivity來做標點
-    public void makepoint_middle_stay(String Ghost,String[][]list2,int a2) {
+    public void makepoint_middle_stay(String Ghost,String[][]list2,int a2){
         MapsActivity MapsActivity = new MapsActivity();
-        MapsActivity.getlist(list2, a2);
-        Log.i("呼叫getlist", "XXXXXXXXXXXXXXXX");
-        MapsActivity.MakePoint(Ghost);
-        Log.i("呼叫MAKEPOINT", "XXXXXXXXXXXXXXXX");
+        MapsActivity.getlist(list2,a2,Ghost);
+        Log.i("呼叫getlist && MAKEPOINT","XXXXXXXXXXXXXXXX");
     }
 
 
@@ -138,57 +138,67 @@ public class MapItem {
             JSONObject mapID = new JSONArray(map_index).getJSONObject(0);
             String MapID=(String)mapID.getString("map_id").toString();
 
-            String ghost_info = DBconnect.executeQuery("SELECT User_id,longitude,latitude FROM map WHERE ghost = '1' AND map_id = '"+MapID+"'  ");
-            String survivor_info = DBconnect.executeQuery("SELECT User_id,longitude,latitude FROM map WHERE ghost != '1' AND map_id = '"+MapID+"' ");
+            String ghost = DBconnect.executeQuery("SELECT ghost FROM map WHERE User_id = '"+ID+"' ");
+            JSONObject ghost2 = new JSONArray(ghost).getJSONObject(0);
+            String Ghost=(String)ghost2.getString("ghost").toString();
 
-            JSONArray ghostArray = new JSONArray(ghost_info);
-            JSONArray survivorArray = new JSONArray(survivor_info);
+            if(Ghost.equals("0")){
+                String ghost_info = DBconnect.executeQuery("SELECT User_id,longitude,latitude FROM map WHERE ghost = '1' AND map_id = '"+MapID+"'  ");
+                String my_info = DBconnect.executeQuery("SELECT longitude,latitude,ghost_catch FROM map WHERE User_id = '"+ID+"' ");
 
-            int g = ghostArray.length();
-            int s = survivorArray.length();
+                JSONArray ghostArray = new JSONArray(ghost_info);
+                JSONArray myArray = new JSONArray(my_info);
 
-            String[][] g_list = new String[g][3];
-            for(int i=0;i<g;i++){
-                JSONObject jsonData = ghostArray.getJSONObject(i);
-                g_list[i][0]=(String)jsonData.getString("User_id").toString();
-                g_list[i][1]=(String)jsonData.getString("longitude").toString();
-                g_list[i][2]=(String)jsonData.getString("latitude").toString();
-            }
-            String[][] s_list = new String[s][4];
-            for(int i=0;i<s;i++){
-                JSONObject jsonData = survivorArray.getJSONObject(i);
-                s_list[i][0]=(String)jsonData.getString("User_id").toString();
-                s_list[i][1]=(String)jsonData.getString("longitude").toString();
-                s_list[i][2]=(String)jsonData.getString("latitude").toString();
-                s_list[i][3]=(String)jsonData.getString("ghost_catch").toString();
-            }
+                int g = ghostArray.length();
+                int s = myArray.length();
 
-            for(int i=0;i<g;i++){
-                for(int j=0;j<s;j++){
+                String[][] g_list = new String[g][3];
+                for(int i=0;i<g;i++){
+                    JSONObject jsonData = ghostArray.getJSONObject(i);
+                    g_list[i][0]=(String)jsonData.getString("User_id").toString();
+                    g_list[i][1]=(String)jsonData.getString("longitude").toString();
+                    g_list[i][2]=(String)jsonData.getString("latitude").toString();
+                    System.out.println("User_id:"+g_list[i][0]+"。longitude:"+g_list[i][1]+"。latitude:"+g_list[i][2]);
+                }
+
+                String[][] s_list = new String[s][3];
+                for(int i=0;i<s;i++){
+                    JSONObject jsonData = myArray.getJSONObject(i);
+                    s_list[i][0]=(String)jsonData.getString("longitude").toString();
+                    s_list[i][1]=(String)jsonData.getString("latitude").toString();
+                    s_list[i][2]=(String)jsonData.getString("ghost_catch").toString();
+                    System.out.println("longitude:"+s_list[i][0]+"。latitude:"+s_list[i][1]+"。ghost_catch:"+s_list[i][2]);
+                }
+
+                for(int i=0;i<g;i++){
                     double ghostLat = rad(Double.parseDouble(g_list[i][2]));
-                    double survivorLat = rad(Double.parseDouble(s_list[j][2]));
-                    double a = ghostLat - survivorLat;
+                    double myLat = rad(Double.parseDouble(s_list[0][1]));
+                    double a = ghostLat - myLat;
                     double ghostLongt = rad(Double.parseDouble(g_list[i][1]));
-                    double survivorLongt = rad(Double.parseDouble(s_list[j][1]));
-                    double b = ghostLongt - survivorLongt;
+                    double myLongt = rad(Double.parseDouble(s_list[0][0]));
+                    double b = ghostLongt - myLongt;
 
-                    double distance = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a/2),2) + Math.cos(ghostLat)*Math.cos(survivorLat)*Math.pow(Math.sin(b/2),2)));
+                    double distance = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a/2),2) + Math.cos(ghostLat)*Math.cos(myLat)*Math.pow(Math.sin(b/2),2)));
                     distance = distance * EARTH_RADIUS;
                     distance = Math.round(distance * 10000) / 10000;
+                    Log.i("Distance", String.valueOf(distance));
 
                     //距離小於3KM時資料庫中ghost_catch會+1，ghost_catch大於3時則代表玩家被抓到了
                     if(distance<=3){
-                        if(s_list[j][3]=="2"){
-                            String result = DBconnect.executeQuery("UPDATE map SET ghost = '1' WHERE User_Id ='"+s_list[j][0]+"'");
-                        }else if(s_list[j][3]=="1"){
-                            String result = DBconnect.executeQuery("UPDATE map SET ghost_catch = '2' WHERE User_Id ='"+s_list[j][0]+"'");
+                        if(s_list[0][2].equals("2")){
+                            String result = DBconnect.executeQuery("UPDATE map SET ghost = '1' WHERE User_Id ='"+ID+"'");
+                        }else if(s_list[0][2].equals("1")){
+                            String result = DBconnect.executeQuery("UPDATE map SET ghost_catch = '2' WHERE User_Id ='"+ID+"'");
                         }else{
-                            String result = DBconnect.executeQuery("UPDATE map SET ghost_catch = '1' WHERE User_Id ='"+s_list[j][0]+"'");
+                            String result = DBconnect.executeQuery("UPDATE map SET ghost_catch = '1' WHERE User_Id ='"+ID+"'");
                         }
                     }else{
-                        //沒事
+                        //超出被鬼抓的範圍，ghost_catch就為0
+                        String result = DBconnect.executeQuery("UPDATE map SET ghost_catch = '0' WHERE User_Id ='"+ID+"'");
                     }
                 }
+            }else{
+                //當鬼沒事
             }
         }
         catch(JSONException e){

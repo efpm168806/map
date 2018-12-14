@@ -3,8 +3,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.view.View;
 import android.widget.EditText;
@@ -18,6 +21,7 @@ import java.io.IOException;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
+    static MediaPlayer mPlayer;
     TextView textView;
     EditText User_id ,User_pwd;
     Button register, forget_pwd, login;
@@ -56,8 +60,28 @@ public class MainActivity extends Activity implements View.OnClickListener {
         if (ID != null){
             User_id.setText(ID);
         }
+        if(finishpage.mPlayer != null) {
+            finishpage.mPlayer.stop();
+        }
+        musicPlay();
     }
+    public void musicPlay() {
+        try
+        {
+            mPlayer = MediaPlayer.create(this, R.raw.background);
+            mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mPlayer.setLooping(true);
+            mPlayer.start();
+            Log.i("music","");
+            //重複播放
+        }catch (IllegalStateException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Log.e("musicerror",e.toString());
 
+        }
+    }
     @Override
     public void onClick(View view) {
         Intent intent = new Intent();

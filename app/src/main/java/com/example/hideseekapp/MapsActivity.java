@@ -14,6 +14,8 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -68,6 +70,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String ID;
     String[][] list;
     int a;
+    static MediaPlayer mPlayer;
 
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
@@ -97,11 +100,45 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     };
 
-    public void getlist(String[][] list,int a){
+    //放音樂
+    public void musicPlay() {
+        try
+        {
+            mPlayer = MediaPlayer.create(this, R.raw.game_background);
+            mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mPlayer.setLooping(true);
+            mPlayer.start();
+            Log.i("music","");
+            //重複播放
+        }catch (IllegalStateException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Log.e("musicerror",e.toString());
+
+        }
+    }
+
+    public void missionMusic(){
+        try
+        {
+            mPlayer = MediaPlayer.create(this, R.raw.mission_show);
+            mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mPlayer.start();
+
+            //重複播放
+        }catch (IllegalStateException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    public void getlist(String[][] list,int a,String Ghost){
         Log.i("list", String.valueOf(list));
         Log.i("a", String.valueOf(a));
         this.list = list;
         this.a = a;
+        MakePoint(Ghost);
     }
 
     @Override
@@ -132,6 +169,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //missionNum=2;
                 //彈出視窗
                 AlertDialog(missionNum);
+                missionMusic();
             }
         }.start();
 
@@ -147,6 +185,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //missionNum=2;
                 //彈出視窗
                 AlertDialog(missionNum);
+                missionMusic();
             }
         }.start();
 
@@ -162,6 +201,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //missionNum=2;
                 //彈出視窗
                 AlertDialog(missionNum);
+                missionMusic();
             }
         }.start();
 
@@ -183,6 +223,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             e.printStackTrace();
         }
         game_state_DB();
+        musicPlay();
+        MainActivity.mPlayer.stop();
     }
 
     public void game_state_DB(){
@@ -214,7 +256,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             //String result = DBconnect.executeQuery("INSERT INTO map (User_id,map_id,game_state) VALUES ('"+ID+"','"+Room_id+"','1')");
             //測試讓他先不是鬼
-            String result = DBconnect.executeQuery("INSERT INTO map (User_id,map_id,game_state,ghost) VALUES ('"+ID+"','"+Room_id+"','1','0')");
+            String result = DBconnect.executeQuery("INSERT INTO map (User_id,map_id,game_state,ghost,ghost_catch,item) VALUES ('"+ID+"','"+Room_id+"','1','0','0','0')");
         }
         catch (JSONException e){
 
@@ -243,6 +285,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             public void onFinish() {
                 //mTextField.setText("done!");
+                Log.i("game_end","this game is over");
                 game_finish();
             }
         }.start();
@@ -269,15 +312,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         } else {
             setupMyLocation();
         }
-        LatLng start = new LatLng(Latitude, Longitude);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(start));
-        mMap.addMarker(new MarkerOptions().position(start).title("起點!!"));
-        mMap.getUiSettings().setZoomControlsEnabled(true);
+//        LatLng start = new LatLng(Latitude, Longitude);
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(start));
+//        mMap.addMarker(new MarkerOptions().position(start).title("起點!!"));
+//        mMap.getUiSettings().setZoomControlsEnabled(true);
     }
 
 
     @SuppressLint("MissingPermission")
     private void setupMyLocation() {
+        Log.i("setupMyLocation","go to MapItem function");
         mMap.setMyLocationEnabled(true);
         LocationManager locationManager=
                 (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -289,7 +333,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
                     new LatLng(location.getLatitude(),
                             location.getLongitude())
-                    , 15));
+                    , 17));
             Latitude = location.getLatitude();
             Longitude = location.getLongitude();
 
@@ -304,7 +348,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Longitude2 = Longitude;
             }
 
-
+            Log.i("FUCK1",Latitude+"++++++"+Longitude);
             MapItem MapItem = new MapItem(Longitude ,Latitude,ID);
             MapItem.map_update();
 
@@ -313,29 +357,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //標誌全部玩家的位置
     public void MakePoint(String Ghost){
         Log.i("MAKEPOINT","MAKEPOINT");
-        Log.i("list", String.valueOf(list));
-        String test123 = list[0][1];
-        String test456 = list[0][2];
-        Log.i("test123", list[0][1]);
-        Log.i("test456", list[0][2]);
         mMap.clear();
 //        不是鬼的人的畫面
-        if(Ghost=="0"){
+        if(Ghost.equals("0")){
+            Log.i("ghost=0", Ghost);
             for(int i=0 ; i<a ; i++){
                 double lat = Double.parseDouble(list[i][2]);
                 double longt = Double.parseDouble(list[i][1]);
-                if(list[i][3]=="1"){
+                if(list[i][3].equals("1")){
                     int n = (int) (Math.random()*4 +1);
-                    double n1 = (double)(Math.random()-0.001);
-                    if(n=='1'){
+                    double n1 = (double)(Math.random()*0.00045-0);
+                    if(n==1){
                         lat = lat + n1;
                         LatLng fakegps = new LatLng(lat, longt);
                         mMap.addMarker(new MarkerOptions().position(fakegps).title("other player"));
-                    }else if(n=='2'){
+                    }else if(n==2){
                         lat = lat - n1;
                         LatLng fakegps = new LatLng(lat, longt);
                         mMap.addMarker(new MarkerOptions().position(fakegps).title("other player"));
-                    }else if(n=='3'){
+                    }else if(n==3){
                         longt = longt + n1;
                         LatLng fakegps = new LatLng(lat, longt);
                         mMap.addMarker(new MarkerOptions().position(fakegps).title("other player"));
@@ -345,9 +385,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         mMap.addMarker(new MarkerOptions().position(fakegps).title("other player"));
                     }
                     //manyme
-                }else if(list[i][3]=="2"){
-                    double n1 = (double)(Math.random()-0.0005);
-                    double n2 = (double)(Math.random()-0.0005);
+                }else if(list[i][3].equals("2")){
+                    Log.i("item = 2","使用分身道具");
+                    double n1 = (Math.random()*0.0005-0);
+                    double n2 = (Math.random()*0.0005-0);
                     LatLng manyme1 = new LatLng(Double.parseDouble(list[i][2])+n1, Double.parseDouble(list[i][1])+n2);
                     LatLng manyme2 = new LatLng(Double.parseDouble(list[i][2])+n1, Double.parseDouble(list[i][1])-n2);
                     LatLng manyme3 = new LatLng(Double.parseDouble(list[i][2])-n1, Double.parseDouble(list[i][1])+n2);
@@ -357,40 +398,44 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     mMap.addMarker(new MarkerOptions().position(manyme3).title("other player"));
                     mMap.addMarker(new MarkerOptions().position(manyme4).title("other player"));
                     //normal
-                }else if(list[i][3]=="3"){
+                }else if(list[i][3].equals("3")){
+                    Log.i("item = 3","使用隱形帳篷");
                     //隱形帳篷所以不標點
                 }else{
+                    Log.i("item = 0","正常");
                     LatLng point = new LatLng(Double.parseDouble(list[i][2]), Double.parseDouble(list[i][1]));
                     mMap.addMarker(new MarkerOptions().position(point).title("other player"));
                 }
             }
+            Log.i("Marker me","Marker me");
 
             LatLng myself = new LatLng(Latitude, Longitude);
             mMap.addMarker(new MarkerOptions().position(myself).title("me"));
 
             //鬼玩家的畫面
-        }else if(Ghost=="1"){
+        }else if(Ghost.equals("1")){
+            Log.i("ghost=1", Ghost);
             for(int i=0 ; i<a ; i++){
                 //如果鬼看到鬼
-                if(list[i][4]=="1"){
+                if(list[i][4].equals("1")){
                     LatLng point = new LatLng(Double.parseDouble(list[i][2]), Double.parseDouble(list[i][1]));
                     mMap.addMarker(new MarkerOptions().position(point).title("ghost player"));
                     //如果鬼看到人
                 }else{
                     double lat = Double.parseDouble(list[i][2]);
                     double longt = Double.parseDouble(list[i][1]);
-                    if(list[i][3]=="1"){
+                    if(list[i][3].equals("1")){
                         int n = (int) (Math.random()*4 +1);
-                        double n1 = (double)(Math.random()-0.001);
-                        if(n=='1'){
+                        double n1 = (double)(Math.random()*0.00045-0);
+                        if(n==1){
                             lat = lat + n1;
                             LatLng fakegps = new LatLng(lat, longt);
                             mMap.addMarker(new MarkerOptions().position(fakegps).title("other player"));
-                        }else if(n=='2'){
+                        }else if(n==2){
                             lat = lat - n1;
                             LatLng fakegps = new LatLng(lat, longt);
                             mMap.addMarker(new MarkerOptions().position(fakegps).title("other player"));
-                        }else if(n=='3'){
+                        }else if(n==3){
                             longt = longt + n1;
                             LatLng fakegps = new LatLng(lat, longt);
                             mMap.addMarker(new MarkerOptions().position(fakegps).title("other player"));
@@ -400,9 +445,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             mMap.addMarker(new MarkerOptions().position(fakegps).title("other player"));
                         }
                         //manyme
-                    }else if(list[i][3]=="2"){
-                        double n1 = (double)(Math.random()-0.0005);
-                        double n2 = (double)(Math.random()-0.0005);
+                    }else if(list[i][3].equals("2")){
+                        double n1 = (Math.random()*0.0005-0);
+                        double n2 = (Math.random()*0.0005-0);
                         LatLng manyme1 = new LatLng(Double.parseDouble(list[i][2])+n1, Double.parseDouble(list[i][1])+n2);
                         LatLng manyme2 = new LatLng(Double.parseDouble(list[i][2])+n1, Double.parseDouble(list[i][1])-n2);
                         LatLng manyme3 = new LatLng(Double.parseDouble(list[i][2])-n1, Double.parseDouble(list[i][1])+n2);
@@ -412,7 +457,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         mMap.addMarker(new MarkerOptions().position(manyme3).title("other player"));
                         mMap.addMarker(new MarkerOptions().position(manyme4).title("other player"));
                         //normal
-                    }else if(list[i][3]=="3"){
+                    }else if(list[i][3].equals("3")){
                         //隱形帳篷所以不標點
                     }else{
                         LatLng point = new LatLng(Double.parseDouble(list[i][2]), Double.parseDouble(list[i][1]));
@@ -420,7 +465,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 }
             }
-
+            Log.i("Marker me","Marker me");
             LatLng myself = new LatLng(Latitude, Longitude);
             mMap.addMarker(new MarkerOptions().position(myself).title("me"));
         }

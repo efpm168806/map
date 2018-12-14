@@ -32,20 +32,31 @@ public class Room2Item {
         }
     }
 
-    public void room_delete(){ //房間沒人刪除房間
+    public JSONArray room_delete(){ //確認房間有無人
         Thread room_delete = new Thread(new Runnable() {
             @Override
             public void run() {
-                if (room_select() != null){
-                    System.out.println("房間尚有玩家!!");
-                }else{
-                    room_det();
-                }
+                room_select();
             }
         });
         room_delete.start();
         try{
             room_delete.join();
+        }catch (InterruptedException e){
+            System.out.println("執行序被中斷");
+        }
+        return jsonArray;
+    }
+    public void room_delete2(){ //房間無人 刪除房間
+        Thread room_delete2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                room_det();
+            }
+        });
+        room_delete2.start();
+        try{
+            room_delete2.join();
         }catch (InterruptedException e){
             System.out.println("執行序被中斷");
         }
@@ -99,8 +110,8 @@ public class Room2Item {
 
     private JSONArray room_select(){  //查看房間是否有人
         try{
-            String result = DBconnect.executeQuery("SELECT  FROM enter_room WHERE room_id ='"+RoomID+"' ");
-            System.out.println("SELECT  FROM enter_room WHERE room_id ='"+RoomID+"' ");
+            String result = DBconnect.executeQuery("SELECT * FROM enter_room WHERE room_id ='"+RoomID+"' ");
+            System.out.println("SELECT * FROM enter_room WHERE room_id ='"+RoomID+"' ");
             JSONArray  jsonArray_insert =new JSONArray(result);
             System.out.println("connect ok");
             jsonArray =jsonArray_insert;
@@ -115,8 +126,8 @@ public class Room2Item {
 
     private void room_det(){  //若無人，刪除房間
         try{
-            String result = DBconnect.executeQuery("DELETE  FROM room WHERE room_id ='"+RoomID+"' ");
-            System.out.println("DELETE  FROM room WHERE room_id ='"+RoomID+"' ");
+            String result = DBconnect.executeQuery("DELETE * FROM room WHERE room_id ='"+RoomID+"' ");
+            System.out.println("DELETE * FROM room WHERE room_id ='"+RoomID+"' ");
             JSONArray  jsonArray_delete =new JSONArray(result);
             System.out.println("connect ok");
             jsonArray =jsonArray_delete;

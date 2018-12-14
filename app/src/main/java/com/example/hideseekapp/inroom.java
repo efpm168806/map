@@ -121,8 +121,11 @@ public class inroom extends Activity implements View.OnClickListener {
         switch (view.getId()){
             case R.id.back:
                 Room2Item Room2Item = new Room2Item(Integer.parseInt(RoomID),ID);
-                Room2Item.player_delete();
-                Room2Item.room_delete();
+                JSONArray select;
+                select =Room2Item.room_delete();
+                if (select!=null){
+                    Room2Item.room_delete2();
+                }
                 intent.setClass(inroom.this, seekroom.class);
                 startActivity(intent);
                 break;
