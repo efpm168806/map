@@ -42,6 +42,34 @@ public class Map2Item {
         }
         return jsonArray;
     }
-
+    public JSONArray map_set(){
+        Thread map_get = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                map_get();
+            }
+        });
+        map_get.start();
+        try {
+            map_get.join();
+        } catch (InterruptedException e) {
+            System.out.println("執行序被中斷");
+        }
+        return jsonArray;
+    }
+    public JSONArray map_get(){
+        try {
+            String result = DBconnect.executeQuery("SELECT * FROM maprange");
+            JSONArray jsonArray_get = new JSONArray(result);
+            System.out.println("SELECT * FROM maprange");
+            System.out.println("connect ok");
+            jsonArray =jsonArray_get;
+            return jsonArray;
+        } catch (Exception e) {
+            Log.e("log_tag", e.toString());
+            System.out.println("connect failed");
+        }
+        return jsonArray;
+    }
 
 }

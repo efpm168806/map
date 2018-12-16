@@ -78,9 +78,10 @@ public class registerItem {
 
     private void registersaveDB(){  //註冊帳密
         try{
-            String result = DBconnect.executeQuery("INSERT INTO user (User_id ,User_pwd ,User_email ,User_name ,User_height ,User_weight) VALUES ('"+id+"' ,'"+pwd+"' ,'"+email+"' ,'"+name+"' ,'"+height+"' ,'"+weight+"')");
-            System.out.println("INSERT INTO user (User_id ,User_pwd ,User_email ,User_name ,User_height ,User_weight) VALUES ('"+id+"' ,'"+pwd+"' ,'"+email+"' ,'"+name+"' ,'"+height+"' ,'"+weight+"')");
-            System.out.println("connect ok");
+            //1216
+            String result2 = DBconnect.executeQuery("INSERT INTO playeritem (item_id,user_id,item_num) VALUES ('3','"+id+"','0')");
+            String result3 = DBconnect.executeQuery("INSERT INTO playeritem (item_id,user_id,item_num) VALUES ('2','"+id+"','0')");
+            String result4 = DBconnect.executeQuery("INSERT INTO playeritem (item_id,user_id,item_num) VALUES ('1','"+id+"','0')");
 
         } catch (Exception e) {
             Log.e("log_tag", e.toString());

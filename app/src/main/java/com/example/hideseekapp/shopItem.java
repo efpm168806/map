@@ -74,7 +74,7 @@ public class shopItem {
 
     }
     private  void item_buy2(){ //購買道具(擁有的情況下)
-        String result = DBconnect.executeQuery("UPDATE  playeritem SET item_num=item_num+1 WHERE item_id ='"+item_id+"' ");
-
+        //1216
+        String result = DBconnect.executeQuery("UPDATE  playeritem SET item_num=item_num+1 WHERE item_id ='"+item_id+"' AND user_id ='"+ID+"'");
     }
 }

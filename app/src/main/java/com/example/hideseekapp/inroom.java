@@ -94,10 +94,7 @@ public class inroom extends Activity implements View.OnClickListener {
                     AddPlayer.setTextColor(Color.BLACK);
                     setPlayerImg();
                 }
-
                 System.out.println("player_data:" + player_list);
-
-
             } catch (JSONException e) {
                 System.out.println("玩家抓取出錯!!");
             }
@@ -122,8 +119,8 @@ public class inroom extends Activity implements View.OnClickListener {
             case R.id.back:
                 Room2Item Room2Item = new Room2Item(Integer.parseInt(RoomID),ID);
                 JSONArray select;
-                Room2Item.player_delete();
                 select =Room2Item.room_delete();
+                Room2Item.player_delete();
                 if (select!=null){
                     Room2Item.room_delete2();
                 }

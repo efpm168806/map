@@ -44,9 +44,7 @@ public class shoppage extends AppCompatActivity implements View.OnClickListener 
         }
         setContentView(R.layout.shoppage);
         Button back = (Button) findViewById(R.id.back);
-        Button next = (Button) findViewById(R.id.next);
         back.setOnClickListener(this);
-        next.setOnClickListener(this);
         ImageButton buyInvisible = (ImageButton)findViewById(R.id.buyInvisible);
         ImageButton buyShadow = (ImageButton)findViewById(R.id.buyShadow);
         ImageButton buyfakeGPS = (ImageButton)findViewById(R.id.buyfakeGPS);
@@ -59,9 +57,7 @@ public class shoppage extends AppCompatActivity implements View.OnClickListener 
     public void onClick(View view) {
         Intent intent = new Intent();
         switch (view.getId()) {
-            case R.id.next:
-                intent.setClass(shoppage.this, shoppage2.class);
-                break;
+            //1216
             case R.id.back:
                 intent.setClass(shoppage.this, gamemainpage.class);
                 startActivity(intent);

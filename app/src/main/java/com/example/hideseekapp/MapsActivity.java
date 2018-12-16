@@ -24,7 +24,6 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -90,7 +89,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     double numberdo;
     double check = 0;
     int mission_times=0;
+    JSONArray map_dot;
+    int dot_id;
+    double dot_longitude, dot_latitude;
     private static final double EARTH_RADIUS = 6378.137;
+
+    //1216
+    TextView score_txt,time_txt;
+    int total;
 
     private Runnable runnable = new Runnable() {
         @Override
@@ -161,9 +167,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mSensorListener = new TestSensorListener();
         mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-
+        //1216
+        score_txt = (TextView)findViewById(R.id.score_txt);
+        time_txt = (TextView)findViewById(R.id.time_txt);
         //發放第一次任務
-        new CountDownTimer(10000,1000){
+        new CountDownTimer(60000,1000){
             public void onTick(long millisUntilFinished) {
 
             }
@@ -171,7 +179,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onFinish() {
                 //隨機挑選任務
                 int missionNum = (int) (Math.random() * 3 + 1);
-                //missionNum=2;
+                //missionNum=3;
                 //彈出視窗
                 AlertDialog(missionNum);
                 missionMusic();
@@ -179,7 +187,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }.start();
 
         //發放第二次任務
-        new CountDownTimer(2500000,1000){
+        new CountDownTimer(240000,1000){
             public void onTick(long millisUntilFinished) {
 
             }
@@ -195,7 +203,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }.start();
 
         //發放第三次任務
-        new CountDownTimer(4800000,1000){
+        new CountDownTimer(480000,1000){
             public void onTick(long millisUntilFinished) {
 
             }
@@ -261,7 +269,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             //String result = DBconnect.executeQuery("INSERT INTO map (User_id,map_id,game_state) VALUES ('"+ID+"','"+Room_id+"','1')");
             //測試讓他先不是鬼
-            String result = DBconnect.executeQuery("INSERT INTO map (User_id,map_id,game_state,ghost,ghost_catch,item) VALUES ('"+ID+"','"+Room_id+"','1','0','0','0')");
+            String result = DBconnect.executeQuery("INSERT INTO map (User_id,map_id,game_state,ghost,ghost_catch,item,score) VALUES ('"+ID+"','"+Room_id+"','1','0','0','0','0')");
         }
         catch (JSONException e){
 
@@ -281,16 +289,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
     //start game total time count down
     public void game_start(){
-        new CountDownTimer(600000, 1000) {
-
+        CountDownTimer start = new CountDownTimer(600000, 1000) {
             public void onTick(long millisUntilFinished) {
                 //倒數10分鐘
-                //mTextField.setText("seconds remaining: " + millisUntilFinished / 1000);
+                //1216
+                time_txt.setText("0" + millisUntilFinished / 60000 + " : " + ((int)millisUntilFinished % 60000)/1000);
+                if(millisUntilFinished<=60000){
+                    time_txt.setTextColor(Color.RED);
+                }
             }
 
             public void onFinish() {
                 //mTextField.setText("done!");
-                Log.i("game_end","this game is over");
+                Log.i("game_end", "this game is over");
                 game_finish();
             }
         }.start();
@@ -380,6 +391,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void MakePoint(String Ghost){
         Log.i("MAKEPOINT","MAKEPOINT");
         mMap.clear();
+        try{ //畫地圖
+            Map2Item Map2Item =new Map2Item("無");
+            map_dot = Map2Item.map_set();
+            System.out.println("map_dot:"+map_dot);
+            for (int i = 0; i < map_dot.length(); i++) {
+                JSONObject jsonObject = map_dot.getJSONObject(i);
+                dot_id = jsonObject.getInt("map_dotid");
+                dot_longitude = jsonObject.getDouble("longitude");
+                dot_latitude = jsonObject.getDouble("latitude");
+                LatLng maprng = new LatLng(dot_latitude,dot_longitude);
+                mMap.addMarker(new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.blue_circle))
+                        .position(maprng));
+
+            }
+        }catch (JSONException e){
+            System.out.println("放置地圖點出錯!!");
+        }
         if(Ghost.equals("0")){
             Log.i("ghost=0", Ghost);
             if(a==1){
@@ -763,9 +792,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             JSONObject jsonObject2 = item2_all.getJSONObject(j);
                             itemDB_list[j][0] = jsonObject2.getString("item_id");
                             itemDB_list[j][1] = jsonObject2.getString("item_name");
-                            System.out.println(itemDB_list[j][0]+"itemDB_list:"+itemDB_list[j][1]);
+                            System.out.println("itemDB_list:"+itemDB_list[j][0]+"itemDB_list:"+itemDB_list[j][1]);
                             if(item_id.equals(itemDB_list[j][0])){
-                                item_list.add(itemDB_list[j][1] + "   X " + item_num);
+                                item_list.add(item_id+"號道具 : "+itemDB_list[j][1] + "   X " + item_num);
                             }
                         }
                     }
@@ -781,7 +810,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 System.out.println("array:"+array);
 
                 AlertDialog.Builder dialog_list = new AlertDialog.Builder(this);
-                dialog_list.setTitle("背包");
+                dialog_list.setTitle("利用List呈現");
 
                 dialog_list.setItems(array, new DialogInterface.OnClickListener(){
                     @Override
@@ -963,6 +992,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             if (parseInt(String.valueOf(culResult)) == correct) {
                                 missionResult = 1;
                                 time.cancel();
+                                //1216
+                                addscore();
+                                score_txt.setText(String.valueOf(total));
                                 result(missionResult);
                             } else {
                                 missionResult = 0;
@@ -990,9 +1022,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         dialog.getButton(android.support.v7.app.AlertDialog.BUTTON_POSITIVE).setTextColor(Color.BLACK);
         dialog.getButton(android.support.v7.app.AlertDialog.BUTTON_POSITIVE).setTextSize(18);
 
-
-
-
         //計時器倒數
         int missionTime[]={31000,31000,11000};
         time =new CountDownTimer(missionTime[missionNum-1], 1000) {
@@ -1002,6 +1031,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         messageText.setText("\n\n"+millisUntilFinished / 1000+"秒內跑完100公尺\n\n目前已完成"+(int)totaldis+"公尺\n\n");
                         if((int)totaldis>=100){
                             missionResult=1;
+                            //1216
+                            addscore();
+                            score_txt.setText(String.valueOf(total));
                             result(missionResult);
                             Latitude2=0;
                             Longitude2=0;
@@ -1024,6 +1056,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         if(mission_times>=25){
                             missionResult=1;
                             result(missionResult);
+                            //1216
+                            addscore();
+                            score_txt.setText(String.valueOf(total));
                             time.cancel();
                         }
 
@@ -1035,7 +1070,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             public void onFinish() {
                 messageText.setText("\n\n\n時間到！\n\n\n");
-                missionResult=1;
+                //1216
+                missionResult=0;
                 result(missionResult);
             }
         }.start();
@@ -1065,7 +1101,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             String Score=(String)addScore.getString("score").toString();
 
             int o_score = Integer.parseInt(Score);
-            int total = o_score + 10;
+            total = o_score + 10;
+
             String result = DBconnect.executeQuery("UPDATE map SET score = '"+total+"' WHERE User_Id ='"+ID+"'");
         }
         catch(JSONException e){
@@ -1112,7 +1149,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 g_list[i][1]=(String)jsonData.getString("Ghost").toString();
                 g_list[i][2]=(String)jsonData.getString("score").toString();
                 int o_score = Integer.parseInt(g_list[i][2]);
-                int total = o_score + 10;
+                //1216
+                total = o_score + 10;
                 String result = DBconnect.executeQuery("UPDATE map SET score = '"+total+"' WHERE User_Id ='"+g_list[i][0]+"'");
             }
         }
@@ -1238,12 +1276,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         out=Math.hypot(x,y);
         return out;
     }
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            return true;
-        }
-        return false;
-    }
+
 }
 
