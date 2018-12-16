@@ -110,7 +110,6 @@ public class RoomItem {
 
     private  void enter_roomDB_chief(){
         String result = DBconnect.executeQuery("INSERT INTO enter_room (room_id ,user_id ,room_chief) VALUES ('"+room_id+"' ,'"+user_id+"' ,1)");
-
     }
 
 }

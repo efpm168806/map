@@ -21,7 +21,6 @@ public class MapItem {
         this.longitude = longitude;
         this.latitude = latitude;
         this.ID = ID;
-        Log.i("FUCK2",latitude+"++++++"+longitude);
     }
 
     public void map_update() {
@@ -74,8 +73,7 @@ public class MapItem {
             JSONObject mapID = new JSONArray(map_index).getJSONObject(0);
             String MapID=(String)mapID.getString("map_id").toString();
 
-            String room_player_info = DBconnect.executeQuery("SELECT User_id,longitude,latitude,item,ghost FROM map WHERE map_id = '"+MapID+"' AND User_id != '"+ID+"' ");
-
+            String room_player_info = DBconnect.executeQuery("SELECT User_id,longitude,latitude,item,ghost FROM map WHERE map_id = '"+MapID+"'");
             JSONArray jsonArray = new JSONArray(room_player_info);
             int a = jsonArray.length();
             list = new String [a][5];
@@ -142,7 +140,8 @@ public class MapItem {
             JSONObject ghost2 = new JSONArray(ghost).getJSONObject(0);
             String Ghost=(String)ghost2.getString("ghost").toString();
 
-            if(Ghost.equals("0")){
+            System.out.println("MapID:"+MapID+"。Ghost:"+Ghost+"。a22222:"+a2);
+            if(Ghost.equals("0") && a2!=1){
                 String ghost_info = DBconnect.executeQuery("SELECT User_id,longitude,latitude FROM map WHERE ghost = '1' AND map_id = '"+MapID+"'  ");
                 String my_info = DBconnect.executeQuery("SELECT longitude,latitude,ghost_catch FROM map WHERE User_id = '"+ID+"' ");
 
@@ -184,7 +183,7 @@ public class MapItem {
                     Log.i("Distance", String.valueOf(distance));
 
                     //距離小於3KM時資料庫中ghost_catch會+1，ghost_catch大於3時則代表玩家被抓到了
-                    if(distance<=3){
+                    if(distance<=1.5){
                         if(s_list[0][2].equals("2")){
                             String result = DBconnect.executeQuery("UPDATE map SET ghost = '1' WHERE User_Id ='"+ID+"'");
                         }else if(s_list[0][2].equals("1")){
@@ -230,7 +229,7 @@ public class MapItem {
 
     private JSONArray item_get() {  //道具放置
         try {
-            String result = DBconnect.executeQuery("SELECT * FROM playeritem WHERE User_id = '"+ID+"'");
+            String result = DBconnect.executeQuery("SELECT * FROM playeritem WHERE user_id = '"+ID+"'");
             JSONArray jsonArray_get = new JSONArray(result);
             System.out.println("connect ok");
             jsonArray =jsonArray_get;

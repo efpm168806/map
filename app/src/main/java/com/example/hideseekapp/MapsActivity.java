@@ -24,6 +24,7 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -35,6 +36,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.location.LocationCallback;
@@ -70,6 +72,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String ID;
     String[][] list;
     int a;
+    int camera_check;
     static MediaPlayer mPlayer;
 
     private SensorManager mSensorManager;
@@ -78,6 +81,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     Context context = MapsActivity.this;
     int missionResult=0;//任務結果,0為失敗1為成功
+    int item_index_use;
     CountDownTimer time;
     String ex=new String();//運算式
     int correct=0;//運算式解答
@@ -136,6 +140,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void getlist(String[][] list,int a,String Ghost){
         Log.i("list", String.valueOf(list));
         Log.i("a", String.valueOf(a));
+        Log.i("Ghost", Ghost);
         this.list = list;
         this.a = a;
         MakePoint(Ghost);
@@ -327,15 +332,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 (LocationManager) getSystemService(LOCATION_SERVICE);
         String provider = "gps";
         Location location = locationManager.getLastKnownLocation(provider);
+
         if (location != null) {
             Log.i("LOCATION", location.getLatitude() + "/"
                     + location.getLongitude()); //經緯度
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(location.getLatitude(),
-                            location.getLongitude())
-                    , 17));
             Latitude = location.getLatitude();
             Longitude = location.getLongitude();
+
+            //第一次進入遊戲中移動攝影機，之後自由玩家使用
+            moveCamera(Latitude,Longitude,camera_check);
 
             //計算距離
 
@@ -348,179 +353,309 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Longitude2 = Longitude;
             }
 
-            Log.i("FUCK1",Latitude+"++++++"+Longitude);
             MapItem MapItem = new MapItem(Longitude ,Latitude,ID);
             MapItem.map_update();
 
         }
     }
+
+    public void moveCamera(double lat,double lont,int camera_check){
+        Log.i("moveCamera", String.valueOf(camera_check));
+        if(camera_check==0){
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                    new LatLng(lat,lont)
+                    , 21));
+            change_camera_check();
+        }else{
+            //不移動鏡頭
+            Log.i("moveCamera-non", String.valueOf(camera_check));
+        }
+    }
+
+    public void change_camera_check(){
+        camera_check = 1;
+    }
+
     //標誌全部玩家的位置
     public void MakePoint(String Ghost){
         Log.i("MAKEPOINT","MAKEPOINT");
         mMap.clear();
-//        不是鬼的人的畫面
         if(Ghost.equals("0")){
             Log.i("ghost=0", Ghost);
-            for(int i=0 ; i<a ; i++){
-                double lat = Double.parseDouble(list[i][2]);
-                double longt = Double.parseDouble(list[i][1]);
-                if(list[i][3].equals("1")){
-                    int n = (int) (Math.random()*4 +1);
-                    double n1 = (double)(Math.random()*0.00045-0);
-                    if(n==1){
-                        lat = lat + n1;
-                        LatLng fakegps = new LatLng(lat, longt);
-                        mMap.addMarker(new MarkerOptions().position(fakegps).title("other player"));
-                    }else if(n==2){
-                        lat = lat - n1;
-                        LatLng fakegps = new LatLng(lat, longt);
-                        mMap.addMarker(new MarkerOptions().position(fakegps).title("other player"));
-                    }else if(n==3){
-                        longt = longt + n1;
-                        LatLng fakegps = new LatLng(lat, longt);
-                        mMap.addMarker(new MarkerOptions().position(fakegps).title("other player"));
-                    }else{
-                        longt = longt - n1;
-                        LatLng fakegps = new LatLng(lat, longt);
-                        mMap.addMarker(new MarkerOptions().position(fakegps).title("other player"));
+            if(a==1){
+                //只有自己
+            }else{
+                for(int i=0 ; i<a ; i++) {
+                    if (list[i][0].equals(ID)) {
+                        //自己的ID不做事
+                    } else {
+                        double lat = Double.parseDouble(list[i][2]);
+                        double longt = Double.parseDouble(list[i][1]);
+                        if(list[i][3].equals("1")){
+                            int n = (int) (Math.random()*4 +1);
+                            double n1 = (double)(Math.random()*0.00025-0);
+                            if(n==1){
+                                lat = lat + n1;
+                                LatLng fakegps = new LatLng(lat, longt);
+                                mMap.addMarker(new MarkerOptions()
+                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                        .position(fakegps)
+                                        .title("other player"));
+                            }else if(n==2){
+                                lat = lat - n1;
+                                LatLng fakegps = new LatLng(lat, longt);
+                                mMap.addMarker(new MarkerOptions()
+                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                        .position(fakegps)
+                                        .title("other player"));
+                            }else if(n==3){
+                                longt = longt + n1;
+                                LatLng fakegps = new LatLng(lat, longt);
+                                mMap.addMarker(new MarkerOptions()
+                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                        .position(fakegps)
+                                        .title("other player"));
+                            }else{
+                                longt = longt - n1;
+                                LatLng fakegps = new LatLng(lat, longt);
+                                mMap.addMarker(new MarkerOptions()
+                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                        .position(fakegps)
+                                        .title("other player"));
+                            }
+                            //manyme
+                        }else if(list[i][3].equals("2")){
+                            Log.i("item = 2","使用分身道具");
+
+                            for(int x = 0 ; x < 4 ; x++){
+                                if(x==1){
+                                    double n3 = 0.0005-(Math.random()*0.001);
+                                    double n4 = 0.0005-(Math.random()*0.001);
+                                    LatLng manyme1 = new LatLng(Double.parseDouble(list[i][2])+n3, Double.parseDouble(list[i][1])+n4);
+                                    mMap.addMarker(new MarkerOptions()
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                            .position(manyme1)
+                                            .title("other player"));
+                                }else if(x==2){
+                                    double n5 = 0.0005-(Math.random()*0.001);
+                                    double n6 = 0.0005-(Math.random()*0.001);
+                                    LatLng manyme2 = new LatLng(Double.parseDouble(list[i][2])+n5, Double.parseDouble(list[i][1])+n6);
+                                    mMap.addMarker(new MarkerOptions()
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                            .position(manyme2)
+                                            .title("other player"));
+                                }else if(x==3){
+                                    double n7 = 0.0005-(Math.random()*0.001);
+                                    double n8 = 0.0005-(Math.random()*0.001);
+                                    LatLng manyme3 = new LatLng(Double.parseDouble(list[i][2])+n7, Double.parseDouble(list[i][1])+n8);
+                                    mMap.addMarker(new MarkerOptions()
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                            .position(manyme3)
+                                            .title("other player"));
+                                }else{
+                                    double n9 = 0.0005-(Math.random()*0.001);
+                                    double n99 = 0.0005-(Math.random()*0.001);
+                                    LatLng manyme4 = new LatLng(Double.parseDouble(list[i][2])+n9, Double.parseDouble(list[i][1])+n99);
+                                    mMap.addMarker(new MarkerOptions()
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                            .position(manyme4)
+                                            .title("other player"));
+                                }
+                            }
+                            //normal
+                        }else if(list[i][3].equals("3")){
+                            Log.i("item = 3","使用隱形帳篷");
+                            //隱形帳篷所以不標點
+                        }else{
+                            Log.i("item = 0","正常");
+                            LatLng point = new LatLng(Double.parseDouble(list[i][2]), Double.parseDouble(list[i][1]));
+                            mMap.addMarker(new MarkerOptions()
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                    .position(point)
+                                    .title("other player"));
+                        }
                     }
-                    //manyme
-                }else if(list[i][3].equals("2")){
-                    Log.i("item = 2","使用分身道具");
-                    double n1 = (Math.random()*0.0005-0);
-                    double n2 = (Math.random()*0.0005-0);
-                    LatLng manyme1 = new LatLng(Double.parseDouble(list[i][2])+n1, Double.parseDouble(list[i][1])+n2);
-                    LatLng manyme2 = new LatLng(Double.parseDouble(list[i][2])+n1, Double.parseDouble(list[i][1])-n2);
-                    LatLng manyme3 = new LatLng(Double.parseDouble(list[i][2])-n1, Double.parseDouble(list[i][1])+n2);
-                    LatLng manyme4 = new LatLng(Double.parseDouble(list[i][2])-n1, Double.parseDouble(list[i][1])-n2);
-                    mMap.addMarker(new MarkerOptions().position(manyme1).title("other player"));
-                    mMap.addMarker(new MarkerOptions().position(manyme2).title("other player"));
-                    mMap.addMarker(new MarkerOptions().position(manyme3).title("other player"));
-                    mMap.addMarker(new MarkerOptions().position(manyme4).title("other player"));
-                    //normal
-                }else if(list[i][3].equals("3")){
-                    Log.i("item = 3","使用隱形帳篷");
-                    //隱形帳篷所以不標點
-                }else{
-                    Log.i("item = 0","正常");
-                    LatLng point = new LatLng(Double.parseDouble(list[i][2]), Double.parseDouble(list[i][1]));
-                    mMap.addMarker(new MarkerOptions().position(point).title("other player"));
                 }
             }
-            Log.i("Marker me","Marker me");
 
+            Log.i("Marker me","Marker me");
             LatLng myself = new LatLng(Latitude, Longitude);
-            mMap.addMarker(new MarkerOptions().position(myself).title("me"));
+            mMap.addMarker(new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.human_me))
+                    .position(myself)
+                    .title("me"));
 
             //鬼玩家的畫面
         }else if(Ghost.equals("1")){
             Log.i("ghost=1", Ghost);
-            for(int i=0 ; i<a ; i++){
-                //如果鬼看到鬼
-                if(list[i][4].equals("1")){
-                    LatLng point = new LatLng(Double.parseDouble(list[i][2]), Double.parseDouble(list[i][1]));
-                    mMap.addMarker(new MarkerOptions().position(point).title("ghost player"));
-                    //如果鬼看到人
-                }else{
-                    double lat = Double.parseDouble(list[i][2]);
-                    double longt = Double.parseDouble(list[i][1]);
-                    if(list[i][3].equals("1")){
-                        int n = (int) (Math.random()*4 +1);
-                        double n1 = (double)(Math.random()*0.00045-0);
-                        if(n==1){
-                            lat = lat + n1;
-                            LatLng fakegps = new LatLng(lat, longt);
-                            mMap.addMarker(new MarkerOptions().position(fakegps).title("other player"));
-                        }else if(n==2){
-                            lat = lat - n1;
-                            LatLng fakegps = new LatLng(lat, longt);
-                            mMap.addMarker(new MarkerOptions().position(fakegps).title("other player"));
-                        }else if(n==3){
-                            longt = longt + n1;
-                            LatLng fakegps = new LatLng(lat, longt);
-                            mMap.addMarker(new MarkerOptions().position(fakegps).title("other player"));
-                        }else{
-                            longt = longt - n1;
-                            LatLng fakegps = new LatLng(lat, longt);
-                            mMap.addMarker(new MarkerOptions().position(fakegps).title("other player"));
-                        }
-                        //manyme
-                    }else if(list[i][3].equals("2")){
-                        double n1 = (Math.random()*0.0005-0);
-                        double n2 = (Math.random()*0.0005-0);
-                        LatLng manyme1 = new LatLng(Double.parseDouble(list[i][2])+n1, Double.parseDouble(list[i][1])+n2);
-                        LatLng manyme2 = new LatLng(Double.parseDouble(list[i][2])+n1, Double.parseDouble(list[i][1])-n2);
-                        LatLng manyme3 = new LatLng(Double.parseDouble(list[i][2])-n1, Double.parseDouble(list[i][1])+n2);
-                        LatLng manyme4 = new LatLng(Double.parseDouble(list[i][2])-n1, Double.parseDouble(list[i][1])-n2);
-                        mMap.addMarker(new MarkerOptions().position(manyme1).title("other player"));
-                        mMap.addMarker(new MarkerOptions().position(manyme2).title("other player"));
-                        mMap.addMarker(new MarkerOptions().position(manyme3).title("other player"));
-                        mMap.addMarker(new MarkerOptions().position(manyme4).title("other player"));
-                        //normal
-                    }else if(list[i][3].equals("3")){
-                        //隱形帳篷所以不標點
+            if(a==1){
+                //只有自己
+            }else{
+                for(int i=0 ; i<a ; i++){
+                    if(list[i][0].equals(ID)){
+                        //自己不做事
                     }else{
-                        LatLng point = new LatLng(Double.parseDouble(list[i][2]), Double.parseDouble(list[i][1]));
-                        mMap.addMarker(new MarkerOptions().position(point).title("other player"));
+                        //如果鬼看到鬼
+                        if(list[i][4].equals("1")){
+                            LatLng point = new LatLng(Double.parseDouble(list[i][2]), Double.parseDouble(list[i][1]));
+                            mMap.addMarker(new MarkerOptions()
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ghost))
+                                    .position(point)
+                                    .title("ghost player"));
+                            //如果鬼看到人
+                        }else{
+                            double lat = Double.parseDouble(list[i][2]);
+                            double longt = Double.parseDouble(list[i][1]);
+                            if(list[i][3].equals("1")){
+                                int n = (int) (Math.random()*4 +1);
+                                double n1 = (double)(Math.random()*0.00025-0);
+                                if(n==1){
+                                    lat = lat + n1;
+                                    LatLng fakegps = new LatLng(lat, longt);
+                                    mMap.addMarker(new MarkerOptions()
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                            .position(fakegps)
+                                            .title("other player"));
+                                }else if(n==2){
+                                    lat = lat - n1;
+                                    LatLng fakegps = new LatLng(lat, longt);
+                                    mMap.addMarker(new MarkerOptions()
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                            .position(fakegps)
+                                            .title("other player"));
+                                }else if(n==3){
+                                    longt = longt + n1;
+                                    LatLng fakegps = new LatLng(lat, longt);
+                                    mMap.addMarker(new MarkerOptions()
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                            .position(fakegps)
+                                            .title("other player"));
+                                }else{
+                                    longt = longt - n1;
+                                    LatLng fakegps = new LatLng(lat, longt);
+                                    mMap.addMarker(new MarkerOptions()
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                            .position(fakegps)
+                                            .title("other player"));
+                                }
+                                //manyme
+                            }else if(list[i][3].equals("2")){
+                                for(int x = 0 ; x < 4 ; x++){
+                                    if(x==1){
+                                        double n3 = 0.0005-(Math.random()*0.001);
+                                        double n4 = 0.0005-(Math.random()*0.001);
+                                        LatLng manyme1 = new LatLng(Double.parseDouble(list[i][2])+n3, Double.parseDouble(list[i][1])+n4);
+                                        mMap.addMarker(new MarkerOptions()
+                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                                .position(manyme1)
+                                                .title("other player"));
+                                    }else if(x==2){
+                                        double n5 = 0.0005-(Math.random()*0.001);
+                                        double n6 = 0.0005-(Math.random()*0.001);
+                                        LatLng manyme2 = new LatLng(Double.parseDouble(list[i][2])+n5, Double.parseDouble(list[i][1])+n6);
+                                        mMap.addMarker(new MarkerOptions()
+                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                                .position(manyme2)
+                                                .title("other player"));
+                                    }else if(x==3){
+                                        double n7 = 0.0005-(Math.random()*0.001);
+                                        double n8 = 0.0005-(Math.random()*0.001);
+                                        LatLng manyme3 = new LatLng(Double.parseDouble(list[i][2])+n7, Double.parseDouble(list[i][1])+n8);
+                                        mMap.addMarker(new MarkerOptions()
+                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                                .position(manyme3)
+                                                .title("other player"));
+                                    }else{
+                                        double n9 = 0.0005-(Math.random()*0.001);
+                                        double n99 = 0.0005-(Math.random()*0.001);
+                                        LatLng manyme4 = new LatLng(Double.parseDouble(list[i][2])+n9, Double.parseDouble(list[i][1])+n99);
+                                        mMap.addMarker(new MarkerOptions()
+                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                                .position(manyme4)
+                                                .title("other player"));
+                                    }
+                                }
+                                //normal
+                            }else if(list[i][3].equals("3")){
+                                //隱形帳篷所以不標點
+                            }else{
+                                LatLng point = new LatLng(Double.parseDouble(list[i][2]), Double.parseDouble(list[i][1]));
+                                mMap.addMarker(new MarkerOptions()
+                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                                        .position(point)
+                                        .title("other player"));
+                            }
+                        }
                     }
                 }
             }
             Log.i("Marker me","Marker me");
             LatLng myself = new LatLng(Latitude, Longitude);
-            mMap.addMarker(new MarkerOptions().position(myself).title("me"));
+            mMap.addMarker(new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ghost_me))
+                    .position(myself)
+                    .title("me"));
         }
+
     }
 
     public void UseItem(int item_index){
+        this.item_index_use = item_index;
         // int item_index = item_index;
         //int item_index = '1';
         //使用道具
-        item_update(item_index);
-        Log.i("XXXXXXXX",ID);
+        item_update();
+        Log.i("UseItem.item_index", String.valueOf(item_index));
     }
 
-    public void item_update(final int item_index) {
+    public void item_update() {
         Thread itemDB = new Thread(new Runnable() {
             @Override
             public void run() {
-                itemDB(item_index);
+                itemDB();
             }
         });
         itemDB.start();
         try {
             itemDB.join();
+            item_time_start();
         } catch (InterruptedException e) {
             System.out.println("執行序被中斷");
+            Log.i("item_update", "XXXXXXXXXXXXXXXXXXX");
         }
     }
 
-    public void itemDB(int item_index){
+    public void itemDB(){
+        Log.i("UseItem.item_index", String.valueOf(item_index_use));
         try{
             String item = DBconnect.executeQuery("SELECT item FROM map WHERE User_id = '"+ID+"' ");
             JSONObject itemID = new JSONArray(item).getJSONObject(0);
             String ItemID=(String)itemID.getString("item").toString();
-            if(ItemID=="0"||ItemID==null||ItemID==""){
-                String result = DBconnect.executeQuery("UPDATE map SET item= "+item_index+" WHERE User_id = '"+ID+"'");
-                String item_num_check = DBconnect.executeQuery("SELECT item_num FROM playeritem WHERE User_id='"+ID+"' AND item_id ='"+item_index+"'");
-                    JSONObject item_num = new JSONArray(item_num_check).getJSONObject(0);
-                    String Item_num=(String)item_num.getString("item_num").toString();
-                    int num = parseInt(Item_num);
-                    int one = '1';
-                    int end = num - one;
-                    String result2 = DBconnect.executeQuery("UPDATE playeritem SET item_num = "+end+" WHERE User_id = '"+ID+"' AND item_id ='"+item_index+"' ");
-                item_time_start();
+
+            if(ItemID.equals("0")){
+                String result = DBconnect.executeQuery("UPDATE map SET item= "+item_index_use+" WHERE User_id = '"+ID+"'");
+                String item_num_check = DBconnect.executeQuery("SELECT item_num FROM playeritem WHERE user_id='"+ID+"' AND item_id ='"+item_index_use+"'");
+                JSONObject item_num = new JSONArray(item_num_check).getJSONObject(0);
+                String Item_num=(String)item_num.getString("item_num").toString();
+                int num = parseInt(Item_num);
+                int end = num - 1;
+                String result2 = DBconnect.executeQuery("UPDATE playeritem SET item_num = "+end+" WHERE User_id = '"+ID+"' AND item_id ='"+item_index_use+"' ");
+                System.out.println("道具使用，故道具擁有數扣一"+num+"減少"+end);
             }else{
                 //道具已經在使用中
+                System.out.println("道具使用中");
             }
 
         }
         catch (JSONException e){
             System.out.println("itemDB error");
+            Log.i("itemDB", "XXXXXXXXXXXXXXXXXXX");
         }
     }
 
     //item time count down
     public void item_time_start(){
+        Log.i("item_time_start", "item_time_start");
         new CountDownTimer(30000, 1000) {
 
             public void onTick(long millisUntilFinished) {
@@ -530,20 +665,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             public void onFinish() {
                 //mTextField.setText("done!");
-                item_finish();
+                item_finish_DB();
             }
         }.start();
     }
 
+    public void item_finish_DB() {
+        Thread item_finishDB = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                item_finish();
+            }
+        });
+        item_finishDB.start();
+        try {
+            item_finishDB.join();
+        } catch (InterruptedException e) {
+            System.out.println("執行序被中斷");
+            Log.i("item_finish_DB", "XXXXXXXXXXXXXXXXXXX");
+        }
+    }
+
     public void item_finish(){
-        try{
-            String item = DBconnect.executeQuery("SELECT item FROM map WHERE User_id = '"+ID+"' ");
-            JSONObject itemID = new JSONArray(item).getJSONObject(0);
-            String result = DBconnect.executeQuery("UPDATE map SET item= '0' WHERE User_id = '"+ID+"'");
-        }
-        catch (JSONException e){
-            System.out.println("item_finish error");
-        }
+        String result = DBconnect.executeQuery("UPDATE map SET item = '0' WHERE User_id = '"+ID+"'");
+        System.out.println("item_finish done");
     }
 
     private void createLocationRequest(){
@@ -561,10 +706,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (location != null) {
             Log.i("LOCATION", location.getLatitude()+"/"
                     +location.getLongitude()); //經緯度
-//            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-//                    new LatLng(location.getLatitude(),
-//                            location.getLongitude())
-//                    , 15));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                    new LatLng(location.getLatitude(),
+                            location.getLongitude())
+                    , 17));
         }
 
 //        Longitude =location.getLongitude();
@@ -600,18 +745,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 MapItem MapItem = new MapItem(0, 0,ID);
                 item_all = MapItem.item_set();
                 System.out.println("item_all:"+item_all);
+
                 try{
                     for(int i= 0 ; i<item_all.length(); i++){
                         JSONObject jsonObject = item_all.getJSONObject(i);
                         item_id = jsonObject.getString("item_id");
                         item_num = jsonObject.getString("item_num");
+                        Log.i("fuck.item_id-item_num",item_id+"-"+item_num);
+
+                        //取item_index<=3的道具，放進item2_all
                         Map2Item Map2Item = new Map2Item(item_id);
                         item2_all = Map2Item.item_set();
-                        JSONObject jsonObject2 = item2_all.getJSONObject(i);
-                        item_name = jsonObject2.getString("item_name");
-                        item_list.add(item_name + "   X " + item_num);
+                        System.out.println("item2_all:"+item2_all);
+
+                        String [][] itemDB_list = new String[item2_all.length()][2];
+                        for(int j=0 ; j<item2_all.length(); j++){
+                            JSONObject jsonObject2 = item2_all.getJSONObject(j);
+                            itemDB_list[j][0] = jsonObject2.getString("item_id");
+                            itemDB_list[j][1] = jsonObject2.getString("item_name");
+                            System.out.println(itemDB_list[j][0]+"itemDB_list:"+itemDB_list[j][1]);
+                            if(item_id.equals(itemDB_list[j][0])){
+                                item_list.add(itemDB_list[j][1] + "   X " + item_num);
+                            }
+                        }
                     }
-                    System.out.println("item_list:" + item_list);
                 } catch (JSONException e) {
                     System.out.println("道具抓取出錯!!");
                 }
@@ -620,16 +777,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 for (int i = 0; i < item_list.size(); i++) {
                     array[i] = item_list.get(i);
                 }
+                Log.i("array", String.valueOf(array));
+                System.out.println("array:"+array);
+
                 AlertDialog.Builder dialog_list = new AlertDialog.Builder(this);
-                dialog_list.setTitle("利用List呈現");
+                dialog_list.setTitle("背包");
+
                 dialog_list.setItems(array, new DialogInterface.OnClickListener(){
                     @Override
                     //只要你在onClick處理事件內，使用which參數，就可以知道按下陣列裡的哪一個了
                     public void onClick(DialogInterface dialog, int which) {
                         // TODO Auto-generated method stub
-//                Toast.makeText(this, "你選的是" + dinner[which], Toast.LENGTH_SHORT).show();
-                        //int a = '1';
-                        //UseItem(a);
+                        //Toast.makeText(this, "你選的是" + dinner[which], Toast.LENGTH_SHORT).show();
+
+                        //which是item_list的產生順序的編號，先設死的因為目前道具只有開放3個
+                        which = which + 1;
+                        if(which==1){
+                            which=3;
+                        }else if(which==3){
+                            which=1;
+                        }else{
+                            which=2;
+                        }
+                        System.out.println("which:"+which);
                         UseItem(which);
                     }
                 });
@@ -871,6 +1041,86 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }.start();
     }
 
+    public void addscore(){
+        Log.i("addscore","addscore 增加分數");
+        Thread addscore_DB = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                addscoreDB();
+            }
+        });
+        addscore_DB.start();
+        try {
+            addscore_DB.join();
+        } catch (InterruptedException e) {
+            System.out.println("執行序被中斷");
+            Log.i("addscore","XXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        }
+    }
+
+    public void addscoreDB(){
+        try{
+            String addscore = DBconnect.executeQuery("SELECT score FROM map WHERE User_id = '"+ID+"' ");
+            JSONObject addScore = new JSONArray(addscore).getJSONObject(0);
+            String Score=(String)addScore.getString("score").toString();
+
+            int o_score = Integer.parseInt(Score);
+            int total = o_score + 10;
+            String result = DBconnect.executeQuery("UPDATE map SET score = '"+total+"' WHERE User_Id ='"+ID+"'");
+        }
+        catch(JSONException e){
+            Log.i("addscoreDB","XXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        }
+    }
+
+    public void ghost_addscore(){
+        Log.i("ghost_addscore","ghost_addscore 增加分數");
+        Thread ghost_addscore_DB = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ghost_addscoreDB();
+            }
+        });
+        ghost_addscore_DB.start();
+        try {
+            ghost_addscore_DB.join();
+        } catch (InterruptedException e) {
+            System.out.println("執行序被中斷");
+            Log.i("ghost_addscore","XXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        }
+    }
+
+    public void ghost_addscoreDB(){
+        try{
+            String map_index = DBconnect.executeQuery("SELECT map_id FROM map WHERE User_id = '"+ID+"' ");
+            JSONObject mapID = new JSONArray(map_index).getJSONObject(0);
+            String MapID=(String)mapID.getString("map_id").toString();
+
+            String addscore = DBconnect.executeQuery("SELECT score FROM map WHERE User_id = '"+ID+"' ");
+            JSONObject addScore = new JSONArray(addscore).getJSONObject(0);
+            String Score=(String)addScore.getString("score").toString();
+
+
+            String ghost_index = DBconnect.executeQuery("SELECT User_id,Ghost,score FROM map WHERE map_id = '"+MapID+"' ");
+            JSONArray ghostArray = new JSONArray(ghost_index);
+            int g = ghostArray.length();
+
+            String [][] g_list = new String [g][3];
+            for(int i=0;i<g;i++){
+                JSONObject jsonData = ghostArray.getJSONObject(i);
+                g_list[i][0]=(String)jsonData.getString("User_id").toString();
+                g_list[i][1]=(String)jsonData.getString("Ghost").toString();
+                g_list[i][2]=(String)jsonData.getString("score").toString();
+                int o_score = Integer.parseInt(g_list[i][2]);
+                int total = o_score + 10;
+                String result = DBconnect.executeQuery("UPDATE map SET score = '"+total+"' WHERE User_Id ='"+g_list[i][0]+"'");
+            }
+        }
+        catch(JSONException e){
+            Log.i("addscoreDB","XXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        }
+    }
+
     public void result(int missionResult){
         final android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(this);
         ImageView iv=new ImageView(context);
@@ -988,6 +1238,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         out=Math.hypot(x,y);
         return out;
     }
-
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            return true;
+        }
+        return false;
+    }
 }
 

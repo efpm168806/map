@@ -122,6 +122,7 @@ public class inroom extends Activity implements View.OnClickListener {
             case R.id.back:
                 Room2Item Room2Item = new Room2Item(Integer.parseInt(RoomID),ID);
                 JSONArray select;
+                Room2Item.player_delete();
                 select =Room2Item.room_delete();
                 if (select!=null){
                     Room2Item.room_delete2();

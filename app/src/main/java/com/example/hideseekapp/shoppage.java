@@ -67,7 +67,7 @@ public class shoppage extends AppCompatActivity implements View.OnClickListener 
                 startActivity(intent);
                 break;
             case R.id.buyInvisible:
-                shopItem shopItem =new shopItem(1 ,ID);
+                shopItem shopItem =new shopItem(3 ,ID);
                 Judgment = shopItem.item_Judgment();
                 System.out.println(Judgment);
                 if(Judgment!=null){
@@ -90,10 +90,10 @@ public class shoppage extends AppCompatActivity implements View.OnClickListener 
                 }
                 break;
             case R.id.buyfakeGPS:
-                shopItem shopItem3 =new shopItem(3 ,ID);
+                shopItem shopItem3 =new shopItem(1 ,ID);
                 Judgment = shopItem3.item_Judgment();
                 if(Judgment!=null){
-                    shopItem3.item_update();
+                    shopItem3.item_update2();
                     System.out.println("有道具!!");
                 }else {
                     shopItem3.item_update();
