@@ -89,6 +89,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             case R.id.login:
                 id = User_id.getText().toString();
                 pwd = User_pwd.getText().toString();
+                System.out.println("帳密:"+id+pwd);
                 LoginItem LoginItem = new LoginItem(id,pwd);
                 String user = LoginItem.login();
                 if (user != "wrong") {

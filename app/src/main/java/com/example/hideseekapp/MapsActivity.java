@@ -810,7 +810,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 System.out.println("array:"+array);
 
                 AlertDialog.Builder dialog_list = new AlertDialog.Builder(this);
-                dialog_list.setTitle("利用List呈現");
+                dialog_list.setTitle("背包");
 
                 dialog_list.setItems(array, new DialogInterface.OnClickListener(){
                     @Override

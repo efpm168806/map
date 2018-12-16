@@ -77,4 +77,53 @@ public class shopItem {
         //1216
         String result = DBconnect.executeQuery("UPDATE  playeritem SET item_num=item_num+1 WHERE item_id ='"+item_id+"' AND user_id ='"+ID+"'");
     }
+
+    public JSONArray user_getcoin() {
+        Thread user_getcoinDB = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                user_coin();
+            }
+        });
+        user_getcoinDB.start();
+        try {
+            user_getcoinDB.join();
+        } catch (InterruptedException e) {
+            System.out.println("執行序被中斷");
+        }
+        return jsonArray;
+    }
+
+    private JSONArray user_coin(){ //判斷使用者是否有錢
+        try {
+            String result = DBconnect.executeQuery("SELECT User_coin FROM user WHERE User_id = '"+ID+"'");
+            JSONArray jsonArray_get = new JSONArray(result);
+            System.out.println("connect ok");
+            jsonArray =jsonArray_get;
+            return jsonArray;
+        } catch (Exception e) {
+            Log.e("log_tag", e.toString());
+            System.out.println("connect failed");
+        }
+        return jsonArray;
+    }
+
+    public void coin_update() {
+        Thread coin_updateDB = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                user_nocoin();
+            }
+        });
+        coin_updateDB.start();
+        try {
+            coin_updateDB.join();
+        } catch (InterruptedException e) {
+            System.out.println("執行序被中斷");
+        }
+    }
+    private  void user_nocoin(){ //扣錢(有錢的情況下)
+        String result = DBconnect.executeQuery("UPDATE  user SET User_coin=User_coin-100 WHERE User_id ='"+ID+"'");
+    }
+
 }
